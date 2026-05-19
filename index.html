@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Glug Plonk — Home Winery App</title>
+<meta name="description" content="Make plonk worth glugging. Guided home winemaking journeys.">
+<meta name="theme-color" content="#0d0d1a">
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#1a1a2e;display:flex;justify-content:center;align-items:flex-start}
+#app{width:100%;max-width:430px;height:100vh;background:#f5f5ff;
+  position:relative;overflow:hidden;display:flex;flex-direction:column}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes celebIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.fade1{animation:fadeUp .6s ease .1s both}
+.fade2{animation:fadeUp .6s ease .3s both}
+.fade3{animation:fadeUp .6s ease .5s both}
+.fade4{animation:fadeUp .6s ease .8s both}
+.fade5{animation:fadeUp .6s ease 1.1s both}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit;width:100%;display:block;box-sizing:border-box}
+::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── Brand palette ──────────────────────────────────────────────────────────
+const B={
+  ink:"#0d0d1a",grape:"#ff00ff",cyan:"#00e5ff",cardBg:"#111827",
+  parchment:"#fffbf0",lightBg:"#f5f5ff",warn:"#ff2d55",orange:"#f90",
+  green:"#00c853",gold:"#c4a96b",blue:"#2d2dff",grey:"#cccccc",dim:"#888888",
+};
+
+// ── Phases ─────────────────────────────────────────────────────────────────
+const PHASES=[
+  {id:1,name:"Prep",color:"#5DCAA5",days:"Day 0"},
+  {id:2,name:"Primary fermentation",color:"#EF9F27",days:"Days 1–14"},
+  {id:3,name:"Secondary fermentation",color:"#7F77DD",days:"Days 15–28"},
+  {id:4,name:"Clearing & stabilising",color:"#D85A30",days:"Days 29–42"},
+  {id:5,name:"Conditioning",color:"#378ADD",days:"Days 43–55"},
+  {id:6,name:"Bottling & glory",color:"#c4a96b",days:"Days 56–60+"},
+];
+
+// ── All 26 Steps ───────────────────────────────────────────────────────────
+const STEPS=[
+  {n:1,ph:1,day:"Day 0",tagline:"Boring but it saves the wine.",
+   title:"Sanitise everything",
+   instruction:"Wash carboy, airlock, bung, spoon and hydrometer tube with soapy water. Rinse with Campden solution. Let drip-dry.",
+   coach:"Twenty minutes now. Six drinkable bottles later.",
+   why:"Dirty gear turns wine into vinegar. Sanitising gives your yeast a clean start.",
+   warning:"Cold rinse only after Campden — heat breaks the sulphite.",timer:"45 min"},
+  {n:2,ph:1,day:"Day 0",tagline:"Tells the truth when bubbles lie.",
+   title:"Take your starting gravity",
+   instruction:"Fill hydrometer tube ¾ full. Float hydrometer. Read at eye level. Record OG. Target 1.080–1.095.",
+   coach:"The truth stick speaks. This number locks in your ABV.",
+   why:"OG records the starting sugar so the app can calculate ABV from the difference.",
+   warning:"Read at eye level — parallax gives a wrong number."},
+  {n:3,ph:1,day:"Day 0",tagline:"The bouncer at the door.",
+   title:"Add the Campden tablet",
+   instruction:"Crush one tablet. Dissolve in warm water. Stir into juice. Cover with cloth. Wait 24 hours.",
+   coach:"Everyone else gets evicted. Your yeast arrives tomorrow.",
+   why:"Sulphite kills wild yeast so your chosen yeast pitches into a clean room.",
+   warning:"Wait the full 24 hours — sulphite kills your yeast too if you pitch early.",timer:"24 hours"},
+  {n:4,ph:1,day:"Day 0",tagline:"Clears things up before they get complicated.",
+   title:"Add pectic enzyme",
+   instruction:"Add ½ tsp pectic enzyme at the same time as the Campden tablet. Same 24-hour clock.",
+   coach:"No enzyme now = mysterious haze later.",
+   why:"Enzyme breaks down pectin so the wine clears properly later."},
+  {n:5,ph:2,day:"Day 1",tagline:"The moment everything actually starts.",
+   title:"Pitch the yeast",
+   instruction:"Sprinkle yeast over the surface. Wait 15 minutes. Stir gently. Fit airlock. Step back.",
+   coach:"Tiny, boozy farming starts now.",
+   why:"Surface rehydration prevents osmotic shock and cell death.",
+   celebration:"The yeast is in. No going back. This is going to work.",
+   timer:"15 min",milestone:true,
+   temp:"Juice must be 20–24°C before pitching. Check it.",
+   tempHot:"Above 26°C? Wait. Move the carboy to a cooler room."},
+  {n:6,ph:2,day:"Days 2–3",tagline:"Proof that something good is happening.",
+   title:"Watch for airlock activity",
+   instruction:"Check the airlock. Bubbles within 12–48 hours = fermentation happening. Nothing at 48 hours? Open the troubleshooter.",
+   coach:"That bubble is yours. Every one is alcohol in real time.",
+   why:"CO₂ escaping through the airlock confirms yeast is converting sugar to alcohol.",
+   warning:"No bubbles? Check the bung seal — gas may escape around a loose fit.",timer:"Watch 48 hrs",
+   temp:"Check room temperature is still 20–24°C.",
+   tempHot:"Above 26°C? Wrap carboy in a damp towel. Move to a cooler spot."},
+  {n:7,ph:2,day:"Day 3",tagline:"Snacks for the tiny workforce.",
+   title:"Add yeast nutrient",
+   instruction:"Remove airlock. Add 1 tsp yeast nutrient. Stir gently. Refit airlock.",
+   coach:"Packed lunch delivered. A fed yeast finishes the job.",
+   why:"Nutrient deficiency is the most common cause of stuck fermentation.",
+   temp:"Room still at 20–24°C? Good. Consistency matters now.",
+   tempHot:"Above 26°C? Move the carboy. A damp towel drops temp 2–3°C fast."},
+  {n:8,ph:2,day:"Day 7",tagline:"Checking in on the chaos.",
+   title:"First gravity reading",
+   instruction:"Draw a sample with the wine thief. Float hydrometer. Record the number. Expect 1.040–1.060.",
+   coach:"The number dropped. The yeast is working.",
+   why:"A dropping gravity confirms fermentation is progressing on schedule.",
+   warning:"Sanitise the wine thief — every unsanitised dip risks bacteria.",
+   temp:"Log temperature alongside the SG. Both tell the story.",
+   tempHot:"Room was above 26°C this week? Smell for solvent notes."},
+  {n:9,ph:2,day:"Day 10",tagline:"The sniff test. Trust your nose.",
+   title:"Check colour and smell",
+   instruction:"Draw a sample. Hold to a phone torch. Deep ruby-purple and cloudy is right. Smell for dark fruit and yeasty warmth.",
+   coach:"That's wine. Rough and young, but wine.",
+   why:"Smell is the earliest diagnostic — wine going wrong usually smells wrong first.",
+   warning:"Sharp or chemical smell? Open the troubleshooter now."},
+  {n:10,ph:2,day:"Day 14",tagline:"The quiet after the storm.",
+   title:"Confirm end of primary fermentation",
+   instruction:"Take a gravity reading. Repeat 24 hours later. Both below 1.010 and matching? Primary fermentation is done.",
+   coach:"Two same readings = confirmation. One low reading is just a teaser.",
+   why:"Two stable readings confirm completion — one can just be a slow day.",
+   warning:"SG above 1.010 after 14 days and stuck? Use the troubleshooter.",
+   celebration:"Primary fermentation: done. That juice is wine now.",
+   timer:"Two readings 24 hrs apart",milestone:true,
+   temp:"Log temperature with your reading. Cold rooms cause stuck fermentation.",
+   tempHot:"Room was warm this week? Check for solvent notes in the smell."},
+  {n:11,ph:3,day:"Day 15",tagline:"Moves wine without stirring the drama.",
+   title:"First rack — leave the mess behind",
+   instruction:"Place clean carboy lower than the first. Siphon wine across, stopping before the sediment. Fit the airlock.",
+   coach:"Gravity does the work. The spent yeast stays where it belongs.",
+   why:"Racking removes lees before autolysis can release bitter compounds.",
+   warning:"Stop the siphon before you hit the sediment layer.",timer:"30 min"},
+  {n:12,ph:3,day:"Day 15",tagline:"No air, no drama.",
+   title:"Top up the carboy",
+   instruction:"Top up to within 2–3cm of the bung with similar juice or water. No headspace.",
+   coach:"Air gap is the enemy. Top it up.",
+   why:"Headspace means oxygen exposure and oxidation."},
+  {n:12.5,ph:3,day:"Day 15",tagline:"A barrel, but make it pocket-sized.",
+   title:"Add oak chips to secondary",
+   instruction:"Rinse 12–24g medium toast oak chips with boiling water for 1 min. Drain. Drop into carboy.",
+   coach:"$4 chips. $1,500 barrel effect. Nobody admits how close it is.",
+   why:"Oak adds vanillin, lactones and tannin structure — complexity of barrel ageing.",
+   warning:"Taste every 5–7 days. Over-oaked is unfixable.",timer:"Taste check every 5–7 days"},
+  {n:13,ph:3,day:"Day 21",tagline:"Slow is good. Slow is right.",
+   title:"Check secondary fermentation",
+   instruction:"Take a gravity reading. Expect 1.000–1.010. Smell for fading yeast and emerging fruit. Good on both? Leave it alone.",
+   coach:"Slow and quiet. Everything is happening. It just doesn't gossip about it.",
+   why:"Secondary fermentation slowly converts final sugars as the wine settles.",
+   temp:"SG stuck above 1.010? Check temperature first — cold is the most common cause.",
+   tempHot:"Room ran warm? Monitor SG closely. Fast fermentation risks complexity."},
+  {n:14,ph:3,day:"Day 28",tagline:"The maths that make it official.",
+   title:"Confirm fermentation is complete",
+   instruction:"Two readings 24 hours apart, both at 0.998–1.002? Done. ABV = (OG − FG) × 131.25.",
+   coach:"That number is yours. Write it everywhere.",
+   why:"Two stable readings confirm fermentation has finished, not just slowed.",
+   warning:"FG still above 1.010? Don't bottle. Use the troubleshooter.",
+   celebration:"Fermentation done. ABV calculated. Everything from here is refinement.",
+   timer:"Two readings 24 hrs apart",milestone:true},
+  {n:15,ph:4,day:"Day 29",tagline:"The lock on the door.",
+   title:"Stabilise with Campden tablet",
+   instruction:"Crush one Campden tablet in cold water. Stir into the wine.",
+   coach:"Low intervention, maximum protection.",
+   why:"CO₂ no longer protects the wine. Free SO₂ takes over as antioxidant."},
+  {n:16,ph:4,day:"Day 30",tagline:"Works quietly while you do nothing.",
+   title:"Add fining agent",
+   instruction:"Vegan: Bentonite (¼ tsp in warm water). Not vegan: Isinglass per packet. Stir in, refit airlock. Do not move for 7–10 days.",
+   coach:"Your job is to do nothing. Not nothing-ish. Nothing.",
+   why:"Fining agents attract and sink haze particles through opposing electrical charge.",
+   warning:"Every vibration resets the settling process. Find a corner. Leave it there.",timer:"7–10 days"},
+  {n:16.5,ph:4,day:"Days 22–34",tagline:"When to say when.",
+   title:"Oak taste check — rack when ready",
+   instruction:"Taste a sample. Vanilla, toast, spice detected? Rack off the oak. Want more? Give it 5 more days.",
+   coach:"Only your palate can decide when enough is enough.",
+   why:"Oak contact time controls intensity. Short = subtle. Long = prominent.",
+   warning:"Tastes like pencil shavings or vanilla extract? Rack immediately."},
+  {n:17,ph:4,day:"Day 38",tagline:"The jewel-check.",
+   title:"Check clarity",
+   instruction:"Hold carboy to a phone torch. Clear ruby red with sediment at the bottom? Ready.",
+   coach:"That looks like an actual bottle of Shiraz. Because it is.",
+   why:"Visual clarity confirms fining has done its job."},
+  {n:18,ph:4,day:"Day 40",tagline:"Clean wine deserves a clean home.",
+   title:"Second rack — off the fining sediment",
+   instruction:"Rack into a fresh sanitised carboy, leaving fining sediment behind. Slow siphon only.",
+   coach:"You will feel very competent doing this. You should.",
+   why:"Fining sediment strips flavour if left in contact too long.",
+   warning:"Fining sediment resuspends instantly. Rack extremely slowly.",timer:"30 min"},
+  {n:19,ph:5,day:"Days 43–53",tagline:"Good things happen slowly and quietly.",
+   title:"Cold conditioning",
+   instruction:"Move carboy to 10–14°C. Leave undisturbed for 7–10 days. Tartrate crystals may form — harmless.",
+   coach:"This is what separates good from great. Leave it alone.",
+   why:"Cold drops tartrate crystals and residual protein haze, improving stability.",
+   warning:"Below 4°C risks freezing. A cool garage, not a freezer.",timer:"7–10 days",
+   temp:"Wine fridge at 12°C is ideal. Singapore aircon room is too warm.",
+   tempHot:"No wine fridge? Use the coldest part of your regular fridge for 5–7 days."},
+  {n:20,ph:5,day:"Day 53",tagline:"Trust your palate. It knows things.",
+   title:"Final taste and adjust",
+   instruction:"Rack off tartrate crystals. Taste it. Flat? Add tartaric acid. Thin? Add tannin. Good? Add nothing.",
+   coach:"Trust your palate. It's been paying attention.",
+   why:"Most Shiraz needs nothing. Taste first, adjust only if clearly needed.",
+   warning:"Add a little, wait 24 hours, taste again. You cannot take it back out.",timer:"30 min"},
+  {n:21,ph:6,day:"Day 56",tagline:"The ceremony before the glory.",
+   title:"Sanitise bottles for bottling day",
+   instruction:"Wash bottles, corker and siphon with soapy water. Rinse each bottle with Campden solution. Drain upside down.",
+   coach:"The day you become someone who has wine on a shelf.",
+   why:"Last line of defence. Any residue in a bottle affects the wine over time.",
+   warning:"Never use a bottle that held dishwasher detergent. Surfactants survive rinsing.",timer:"1 hour",
+   temp:"Bottle at 20–24°C. Let it warm from cold conditioning first.",
+   tempHot:"Above 26°C on bottling day? Move to a cooler room."},
+  {n:22,ph:6,day:"Day 56",tagline:"Six bottles. Six moments of proof.",
+   title:"Bottle your wine",
+   instruction:"Siphon wine into sanitised bottles to 2cm from the cork line. Cork firmly. Stand upright 24 hours, then lay on sides.",
+   coach:"Each bottle is a small act of confidence.",
+   why:"Upright for 24 hours lets the cork seat properly. On sides keeps it moist.",
+   warning:"Don't leave the carboy open between bottles.",timer:"1–2 hours"},
+  {n:23,ph:6,day:"Day 57",tagline:"The label that says: I made this.",
+   title:"Apply your Vintage Card label",
+   instruction:"Stick the Glug Plonk Vintage Card label on each bottle. Take a photo of the first one.",
+   coach:"This label is the evidence. Stick it on. Be briefly, quietly proud.",
+   celebration:"Batch #001 is labelled. You are a winemaker.",milestone:true},
+  {n:24,ph:6,day:"Day 60+",tagline:"The hardest step. Do it anyway.",
+   title:"Wait — then open the first bottle",
+   instruction:"Wait at least 4 weeks. Better at 8. Open slowly. Decant 20 minutes. Smell first. Then drink.",
+   coach:"Patience is the final ingredient.",
+   why:"Bottle shock mutes wine after bottling. Rest lets it reintegrate.",
+   celebration:"You did it. Pour the first glass. Start planning Batch #002.",
+   timer:"4–6 weeks",milestone:true},
+];
+const TOTAL=STEPS.length;
+
+// ── App state ──────────────────────────────────────────────────────────────
+const S={
+  screen:"splash",tab:"home",
+  wineryName:"",skillLevel:"",batchName:"The First One",
+  stepIdx:0,finished:false,
+  ob:0,tmpName:"",tmpSkill:"",tmpBatch:"The First One",
+  showWhy:false,showTemp:false,celebration:false,
+  readings:[],_sg:"",_temp:"",_notes:"",
+};
+function set(p){Object.assign(S,p);draw();}
+
+// ── DOM helpers ────────────────────────────────────────────────────────────
+function el(tag,attrs,...kids){
+  const n=document.createElement(tag);
+  for(const[k,v]of Object.entries(attrs||{})){
+    if(k==="style"&&typeof v==="object")Object.assign(n.style,v);
+    else if(k==="onClick")n.onclick=v;
+    else if(k==="onInput")n.oninput=e=>v(e.target.value);
+    else if(k==="className")n.className=v;
+    else n.setAttribute(k,v);
+  }
+  for(const c of kids.flat(Infinity)){
+    if(c==null||c===false)continue;
+    n.appendChild(c instanceof Node?c:document.createTextNode(String(c)));
+  }
+  return n;
+}
+const d=(s,...k)=>el("div",{style:s},...k);
+const p=(s,...k)=>el("p",{style:s},...k);
+const b=(s,cb,...k)=>el("button",{style:s,onClick:cb},...k);
+const sp=(s,...k)=>el("span",{style:s},...k);
+const inp=(s,ph,v,cb,type="text")=>{
+  const i=el("input",{style:s,placeholder:ph,type,value:v||""});
+  i.oninput=e=>cb(e.target.value); return i;
+};
+
+// ── Screens ────────────────────────────────────────────────────────────────
+function Splash(){
+  return d({background:B.ink,height:"100%",display:"flex",flexDirection:"column",
+    alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"},
+    el("div",{className:"fade1",style:{fontSize:11,color:B.dim,letterSpacing:".2em",
+      textTransform:"uppercase",marginBottom:24}},"Home winery app"),
+    d({marginBottom:16},
+      el("div",{className:"fade2",style:{fontFamily:"Georgia,serif",fontSize:58,
+        color:B.cyan,lineHeight:1.05}},"Glug"),
+      el("div",{className:"fade3",style:{fontFamily:"Georgia,serif",fontSize:58,
+        color:B.grape,lineHeight:1.05}},"Plonk")
+    ),
+    el("div",{className:"fade4",style:{width:36,height:1,background:"#333",
+      margin:"0 auto 18px"}}),
+    el("div",{className:"fade4",style:{fontSize:13,color:B.dim,fontStyle:"italic",
+      marginBottom:48,lineHeight:1.6}},'"Make plonk worth glugging."'),
+    el("button",{className:"fade5",onClick:()=>set({screen:"onboard"}),
+      style:{background:B.grape,color:B.ink,border:"none",borderRadius:24,
+        padding:"16px 48px",fontSize:15,fontWeight:700,cursor:"pointer",
+        letterSpacing:".06em"}},"Let me in")
+  );
+}
+
+function Onboard(){
+  const os=S.ob;
+  const skills=[
+    {id:"Grape Newbie",desc:"First time. Slightly terrified. Very excited."},
+    {id:"Cellar Apprentice",desc:"Done a few things. Ready for more."},
+    {id:"Vigneron",desc:"Know my lees from my legs."},
+  ];
+  return d({background:B.ink,height:"100%",padding:"48px 24px 32px",
+    display:"flex",flexDirection:"column",overflowY:"auto"},
+    d({display:"flex",gap:8,justifyContent:"center",marginBottom:40},
+      ...[0,1,2].map(i=>d({width:8,height:8,borderRadius:"50%",
+        background:i===os?B.grape:"#2a2a4a"}))
+    ),
+    ...(os===0?[
+      d({fontFamily:"Georgia,serif",fontSize:26,color:"#fff",marginBottom:8},"Name your winery."),
+      p({fontSize:13,color:B.dim,lineHeight:1.6,marginBottom:24},
+        "Every great winery started with a name on a napkin."),
+      inp({background:"#1a1a3a",border:`1.5px solid ${B.grape}`,borderRadius:12,
+        padding:"14px 16px",fontSize:15,color:"#fff",outline:"none",
+        marginBottom:12,fontFamily:"Georgia,serif"},
+        "e.g. Garage Noir Wines",S.tmpName,v=>set({tmpName:v})),
+      inp({background:"#1a1a3a",border:"1.5px solid #333",borderRadius:12,
+        padding:"14px 16px",fontSize:14,color:"#fff",outline:"none",marginBottom:32},
+        "Name your first batch",S.tmpBatch,v=>set({tmpBatch:v})),
+      d({flex:1}),
+      b({background:S.tmpName?B.grape:"#333",color:S.tmpName?B.ink:B.dim,
+        border:"none",borderRadius:24,padding:"16px",fontSize:15,fontWeight:700,
+        width:"100%"},()=>S.tmpName&&set({ob:1}),"Next →")
+    ]:[]),
+    ...(os===1?[
+      d({fontFamily:"Georgia,serif",fontSize:26,color:"#fff",marginBottom:8},
+        "Who are you in the cellar?"),
+      p({fontSize:13,color:B.dim,marginBottom:24},
+        "Be honest. This sets the language for your whole journey."),
+      d({display:"flex",flexDirection:"column",gap:10,marginBottom:32},
+        ...skills.map(s=>b({
+          background:S.tmpSkill===s.id?"#fff0ff":"#1a1a3a",
+          border:`1.5px solid ${S.tmpSkill===s.id?B.grape:"#333"}`,
+          borderRadius:14,padding:"14px 16px",textAlign:"left",width:"100%"},
+          ()=>set({tmpSkill:s.id}),
+          d({fontSize:14,fontWeight:600,color:S.tmpSkill===s.id?B.grape:"#fff"},s.id),
+          d({fontSize:12,color:B.dim,marginTop:3},s.desc)
+        ))
+      ),
+      d({flex:1}),
+      b({background:S.tmpSkill?B.grape:"#333",color:S.tmpSkill?B.ink:B.dim,
+        border:"none",borderRadius:24,padding:"16px",fontSize:15,fontWeight:700,
+        width:"100%"},()=>S.tmpSkill&&set({ob:2}),"Next →")
+    ]:[]),
+    ...(os===2?[
+      d({fontFamily:"Georgia,serif",fontSize:26,color:"#fff",marginBottom:8},
+        `Ready, ${S.tmpName}.`),
+      p({fontSize:13,color:B.dim,lineHeight:1.6,marginBottom:24},
+        `Batch #001 "${S.tmpBatch}" — 26 steps, 60 days, something worth drinking.`),
+      d({background:"#1a1a3a",borderRadius:14,padding:16,marginBottom:32},
+        d({fontSize:10,color:B.cyan,textTransform:"uppercase",
+          letterSpacing:".08em",marginBottom:8},"Your first journey"),
+        d({fontFamily:"Georgia,serif",fontSize:18,color:"#fff",marginBottom:4},"Beginner's Shiraz"),
+        d({fontSize:12,color:B.dim},`Red · Full-bodied · 60 days · ${TOTAL} steps`)
+      ),
+      d({flex:1}),
+      b({background:B.grape,color:B.ink,border:"none",borderRadius:24,
+        padding:"16px",fontSize:15,fontWeight:700,width:"100%",letterSpacing:".04em"},
+        ()=>set({screen:"main",tab:"home",wineryName:S.tmpName,
+          skillLevel:S.tmpSkill,batchName:S.tmpBatch}),"Open the cellar →")
+    ]:[])
+  );
+}
+
+function Home(){
+  const step=STEPS[S.stepIdx];
+  const phase=PHASES[step.ph-1];
+  const pct=(S.stepIdx/TOTAL)*100;
+  return d({background:B.lightBg,flex:1,overflowY:"auto",padding:"16px 16px 20px"},
+    d({padding:"0 4px",marginBottom:16},
+      d({fontSize:11,color:B.dim,marginBottom:2},S.wineryName||"My Winery"),
+      d({fontFamily:"Georgia,serif",fontSize:24,color:B.ink},"The Cellar Door")
+    ),
+    d({background:B.ink,borderRadius:20,overflow:"hidden",marginBottom:12},
+      d({padding:"18px 20px"},
+        d({display:"flex",alignItems:"center",gap:6,marginBottom:8},
+          d({width:7,height:7,borderRadius:"50%",background:phase.color,flexShrink:0}),
+          d({fontSize:10,color:B.dim,textTransform:"uppercase",letterSpacing:".08em"},
+            `Batch #001 · ${phase.name}`)
+        ),
+        d({fontFamily:"Georgia,serif",fontSize:22,color:B.grape,marginBottom:4},
+          S.batchName||"The First One"),
+        d({fontSize:12,color:B.dim,marginBottom:14},`Beginner's Shiraz · ${step.day}`),
+        d({height:4,background:"#1a1a3a",borderRadius:2,marginBottom:6},
+          d({height:4,background:B.grape,width:`${pct}%`,borderRadius:2})
+        ),
+        d({display:"flex",justifyContent:"space-between",fontSize:10,color:B.dim,marginBottom:18},
+          sp({},"Step "+(S.stepIdx+1)+" of "+TOTAL),
+          sp({},Math.round(pct)+"%")
+        ),
+        b({width:"100%",background:B.grape,color:B.ink,border:"none",
+          borderRadius:18,padding:"13px",fontSize:14,fontWeight:700,letterSpacing:".04em"},
+          ()=>set({tab:"step"}),"Continue journey")
+      ),
+      d({background:"#f0f0ff",padding:"14px 20px"},
+        d({fontSize:10,color:B.blue,fontWeight:600,textTransform:"uppercase",
+          letterSpacing:".06em",marginBottom:5},"Glug Plonk Coach"),
+        p({fontSize:12,color:"#333",fontStyle:"italic",lineHeight:1.6,margin:0},
+          `"${step.coach}"`)
+      )
+    ),
+    d({background:"#fff",border:"1.5px solid #e0e0f0",borderRadius:14,
+      padding:"14px 16px",marginBottom:12},
+      d({fontSize:10,color:B.dim,marginBottom:4},"Next up"),
+      d({fontSize:14,fontWeight:500,color:B.ink},step.title),
+      d({fontSize:11,color:B.dim,marginTop:3,fontStyle:"italic"},step.tagline)
+    ),
+    d({display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},
+      d({background:"#fff",borderRadius:12,padding:"14px",border:"1.5px solid #e0e0f0",textAlign:"center"},
+        d({fontSize:22,fontWeight:700,color:B.ink,fontFamily:"Georgia,serif"},TOTAL-S.stepIdx-1),
+        d({fontSize:11,color:B.dim},"steps remaining")
+      ),
+      d({background:"#fff",borderRadius:12,padding:"14px",border:"1.5px solid #e0e0f0",textAlign:"center"},
+        d({fontSize:14,fontWeight:700,color:B.grape,fontFamily:"monospace"},step.day),
+        d({fontSize:11,color:B.dim},"current day")
+      )
+    )
+  );
+}
+
+function Step(){
+  const step=STEPS[S.stepIdx];
+  const phase=PHASES[step.ph-1];
+  const pct=(S.stepIdx/TOTAL)*100;
+
+  const nextStep=()=>{
+    const nx=S.stepIdx+1;
+    if(nx>=TOTAL){set({finished:true,celebration:false,tab:"home"});}
+    else{set({stepIdx:nx,celebration:false,showWhy:false,showTemp:false,tab:"home"});}
+  };
+  const done=()=>{
+    if(step.milestone&&step.celebration)set({celebration:true});
+    else nextStep();
+  };
+
+  const celeb=S.celebration?d({
+    position:"fixed",inset:0,background:"rgba(13,13,26,.97)",zIndex:100,
+    display:"flex",flexDirection:"column",alignItems:"center",
+    justifyContent:"center",padding:"2rem",textAlign:"center",
+    animation:"celebIn .35s ease both"},
+    d({fontSize:"3.5rem",marginBottom:"1rem",display:"inline-block",
+      animation:"pulse 1.4s infinite"},"🍷"),
+    d({fontFamily:"Georgia,serif",fontSize:22,color:B.grape,
+      marginBottom:12,lineHeight:1.3},step.title),
+    p({fontSize:14,color:"#fff",fontStyle:"italic",lineHeight:1.7,
+      marginBottom:32,maxWidth:300},`"${step.celebration}"`),
+    b({background:B.grape,color:B.ink,border:"none",borderRadius:24,
+      padding:"14px 40px",fontSize:15,fontWeight:700},nextStep,"Continue →")
+  ):null;
+
+  return d({background:B.ink,flex:1,display:"flex",flexDirection:"column",overflowY:"auto"},
+    celeb,
+    d({display:"flex",justifyContent:"space-between",padding:"12px 18px 0",
+      color:B.dim,fontSize:11},
+      sp({fontFamily:"monospace"},"9:41"),
+      sp({color:B.cyan,fontFamily:"monospace",fontSize:10},`Step ${S.stepIdx+1} of ${TOTAL}`)
+    ),
+    d({height:3,background:"#1a1a3a",margin:"8px 0 0"},
+      d({height:3,background:B.grape,width:`${pct}%`,borderRadius:"0 2px 2px 0",transition:"width .4s"})
+    ),
+    d({flex:1,overflowY:"auto",padding:"16px 18px 96px"},
+      d({display:"flex",alignItems:"center",gap:8,marginBottom:12},
+        d({width:8,height:8,borderRadius:"50%",background:phase.color,flexShrink:0}),
+        sp({fontSize:10,fontWeight:600,color:phase.color,textTransform:"uppercase",
+          letterSpacing:".08em"},`${phase.name} · ${step.day}`)
+      ),
+      p({fontSize:12,color:B.cyan,fontStyle:"italic",marginBottom:8},step.tagline),
+      el("h1",{style:{fontFamily:"Georgia,serif",fontSize:26,color:"#fff",
+        lineHeight:1.2,marginBottom:16,fontWeight:400}},step.title),
+      p({fontSize:14,color:B.grey,lineHeight:1.75,marginBottom:16},step.instruction),
+      d({display:"flex",gap:8,flexWrap:"wrap",marginBottom:16},
+        ...(step.timer?[sp({background:"#1a1a3a",color:B.grape,borderRadius:20,
+          padding:"5px 12px",fontSize:11,fontWeight:500,fontFamily:"monospace"},
+          "⏱ "+step.timer)]:[]),
+        ...(step.temp?[b({background:S.showTemp?"#f90":"#1a1a3a",
+          color:S.showTemp?B.ink:"#f90",border:"none",borderRadius:20,
+          padding:"5px 12px",fontSize:11,fontWeight:500,fontFamily:"monospace"},
+          ()=>set({showTemp:!S.showTemp}),"🌡 Temp "+(S.showTemp?"▲":"▼"))]:[])
+      ),
+      ...(S.showTemp&&step.temp?[d({background:"#1a0f00",border:"1px solid #f90",
+        borderRadius:10,padding:"12px 14px",marginBottom:16},
+        d({fontSize:10,color:"#f90",fontWeight:600,textTransform:"uppercase",
+          letterSpacing:".06em",marginBottom:6},"Temperature check"),
+        p({fontSize:12,color:"#ffd080",lineHeight:1.6,margin:0},step.temp),
+        ...(step.tempHot?[p({fontSize:12,color:"#ff8080",lineHeight:1.6,
+          margin:"8px 0 0",borderTop:"1px solid #3a2000",paddingTop:8},"🔥 "+step.tempHot)]:[] )
+      )]:[] ),
+      ...(step.warning?[d({background:"#180008",border:"1px solid #ff2d55",
+        borderRadius:10,padding:"12px 14px",marginBottom:16},
+        d({fontSize:10,color:B.warn,fontWeight:600,textTransform:"uppercase",
+          letterSpacing:".06em",marginBottom:4},"⚠ Watch out"),
+        p({fontSize:12,color:"#ffb0b8",lineHeight:1.6,margin:0},step.warning)
+      )]:[] ),
+      d({background:B.cardBg,borderRadius:12,padding:"14px 16px",marginBottom:12},
+        d({fontSize:10,color:B.grape,fontWeight:600,textTransform:"uppercase",
+          letterSpacing:".08em",marginBottom:6},"Glug Plonk Coach"),
+        p({fontSize:13,color:"#e0e0e0",fontStyle:"italic",lineHeight:1.65,margin:0},
+          `"${step.coach}"`)
+      ),
+      ...(step.why?[
+        b({background:"transparent",border:"1px solid #2a2a4a",borderRadius:20,
+          padding:"6px 14px",fontSize:11,color:B.dim,marginBottom:8},
+          ()=>set({showWhy:!S.showWhy}),"⚗ The science bit "+(S.showWhy?"▲":"▼")),
+        ...(S.showWhy?[d({background:B.parchment,borderRadius:10,
+          padding:"12px 14px",marginBottom:16},
+          d({fontSize:10,color:"#b06020",fontWeight:600,textTransform:"uppercase",
+            letterSpacing:".06em",marginBottom:6},"The science bit"),
+          p({fontSize:12,color:"#4a3010",lineHeight:1.65,margin:0},step.why)
+        )]:[] )
+      ]:[])
+    ),
+    d({position:"sticky",bottom:0,padding:"12px 18px 20px",
+      background:"linear-gradient(to top,#0d0d1a 60%,transparent)"},
+      b({width:"100%",background:B.grape,color:B.ink,border:"none",
+        borderRadius:24,padding:"16px",fontSize:"15px",fontWeight:700,
+        letterSpacing:".04em",boxShadow:"0 0 28px #ff00ff44"},done,"Done — next step ↗")
+    )
+  );
+}
+
+function Log(){
+  const readingsList=d({display:"flex",flexDirection:"column",gap:8},
+    ...(S.readings.length===0?[d({textAlign:"center",padding:"40px 20px"},
+      d({fontSize:32,marginBottom:12},"📊"),
+      d({fontSize:14,color:B.dim},"Log your first reading above.")
+    )]:S.readings.slice().reverse().map(r=>{
+      const st=r.temp<18?"Too cold ❄️":r.temp>26?"Too warm 🔥":"Perfect ✓";
+      const sc=r.temp<18?B.cyan:r.temp>26?B.warn:B.green;
+      return d({background:"#fff",border:"1.5px solid #e0e0f0",
+        borderRadius:12,padding:"12px 14px"},
+        d({display:"flex",justifyContent:"space-between",marginBottom:6},
+          sp({fontFamily:"monospace",fontSize:18,fontWeight:600,color:B.ink},
+            "SG "+r.sg.toFixed(3)),
+          sp({fontSize:10,color:B.dim},r.date)
+        ),
+        d({display:"flex",gap:12,fontSize:11},
+          sp({color:B.dim},r.temp+"°C"),
+          sp({color:sc,fontWeight:500},st),
+          r.notes?sp({color:B.dim,fontStyle:"italic"},r.notes):null
+        )
+      );
+    }))
+  );
+
+  let _sg="",_temp="",_notes="";
+  const sgInp=inp({width:"100%",padding:"10px",border:"1.5px solid #e0e0f0",
+    borderRadius:8,fontSize:14,fontFamily:"monospace",outline:"none"},"1.050","",v=>{_sg=v;},"number");
+  const tmpInp=inp({width:"100%",padding:"10px",border:"1.5px solid #e0e0f0",
+    borderRadius:8,fontSize:14,fontFamily:"monospace",outline:"none"},"22","",v=>{_temp=v;},"number");
+  const noteInp=inp({width:"100%",padding:"10px",border:"1.5px solid #e0e0f0",
+    borderRadius:8,fontSize:13,outline:"none"},"Notes (optional)","",v=>{_notes=v;});
+
+  const saveBtn=b({width:"100%",background:B.blue,color:"#fff",border:"none",
+    borderRadius:20,padding:"12px",fontSize:13,fontWeight:600},()=>{
+      const sg=parseFloat(_sg);
+      if(!sg)return;
+      const temp=parseFloat(_temp)||0;
+      S.readings.push({sg,temp,notes:_notes,date:new Date().toLocaleDateString("en-SG")});
+      saveBtn.textContent="✓ Saved";saveBtn.style.background=B.green;
+      setTimeout(()=>draw(),100);
+    },"Save reading");
+
+  return d({background:B.lightBg,flex:1,overflowY:"auto",padding:"16px 16px 20px"},
+    d({fontFamily:"Georgia,serif",fontSize:24,color:B.ink,marginBottom:4,padding:"0 4px"},"Brew Log"),
+    d({fontSize:12,color:B.dim,marginBottom:20,padding:"0 4px"},"Beginner's Shiraz · Batch #001"),
+    d({background:"#fff",border:"1.5px solid #e0e0f0",borderRadius:16,padding:16,marginBottom:16},
+      d({fontSize:13,fontWeight:500,color:B.ink,marginBottom:12},"Log a reading"),
+      d({display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10},
+        d({},d({fontSize:11,color:B.dim,marginBottom:4},"SG reading"),sgInp),
+        d({},d({fontSize:11,color:B.dim,marginBottom:4},"Temperature °C"),tmpInp)
+      ),
+      noteInp,d({height:10}),saveBtn
+    ),
+    readingsList
+  );
+}
+
+function Cellar(){
+  const posts=[
+    {winery:"Garage Noir Wines",region:"Singapore",batch:"The First One",wine:"Lo-fi Shiraz",abv:12.8,kudos:7},
+    {winery:"Rooftop Reds",region:"Melbourne, AU",batch:"Sunday Sessions",wine:"Apartment White",abv:11.4,kudos:14},
+    {winery:"Kitchen Bench Co",region:"London, UK",batch:"For Mum",wine:"Lo-fi Rosé",abv:11.9,kudos:22},
+  ];
+  let counts=[...posts.map(p=>p.kudos)];
+  return d({background:B.lightBg,flex:1,overflowY:"auto",padding:"16px 16px 20px"},
+    d({fontFamily:"Georgia,serif",fontSize:24,color:B.ink,marginBottom:4,padding:"0 4px"},"The Cellar"),
+    d({fontSize:12,color:B.dim,marginBottom:20,padding:"0 4px"},"Home winemakers, worldwide."),
+    d({display:"flex",flexDirection:"column",gap:10},
+      ...posts.map((post,i)=>{
+        const kb=b({background:"transparent",border:"1px solid #e0e0f0",
+          borderRadius:20,padding:"5px 14px",fontSize:11,color:B.dim},()=>{
+            counts[i]++;kb.textContent=`🍷 ${counts[i]} kudos`;
+          },`🍷 ${counts[i]} kudos`);
+        return d({background:"#fff",border:"1.5px solid #e0e0f0",borderRadius:16,padding:16},
+          d({display:"flex",justifyContent:"space-between",marginBottom:8},
+            d({},d({fontSize:13,fontWeight:600,color:B.ink},post.winery),
+              d({fontSize:11,color:B.dim},post.region))
+          ),
+          d({fontFamily:"Georgia,serif",fontSize:17,color:B.grape,marginBottom:3},post.batch),
+          d({fontSize:12,color:B.dim,marginBottom:12},`${post.wine} · ${post.abv}% ABV`),
+          kb
+        );
+      })
+    )
+  );
+}
+
+function Vintage(){
+  return d({background:B.ink,height:"100%",display:"flex",flexDirection:"column",
+    alignItems:"center",justifyContent:"center",padding:"2rem 1.5rem",textAlign:"center",
+    overflowY:"auto"},
+    d({fontSize:12,color:B.dim,letterSpacing:".12em",textTransform:"uppercase",marginBottom:24},
+      "Journey complete"),
+    d({border:`2px solid ${B.grape}`,borderRadius:20,padding:"28px 24px",
+      maxWidth:320,width:"100%",marginBottom:32,background:"#ffffff08"},
+      d({fontSize:10,color:B.dim,letterSpacing:".12em",textTransform:"uppercase",
+        marginBottom:12},`${S.wineryName||"My Winery"} · Batch #001`),
+      d({fontFamily:"Georgia,serif",fontSize:28,color:"#fff",marginBottom:6,lineHeight:1.2},
+        S.batchName||"The First One"),
+      d({fontSize:11,color:B.dim,letterSpacing:".08em",textTransform:"uppercase",
+        marginBottom:20},`${new Date().getFullYear()} · Beginner's Shiraz`),
+      d({height:1,background:"#333",marginBottom:20}),
+      p({fontSize:12,color:B.grey,fontStyle:"italic",lineHeight:1.6,marginBottom:20},
+        '"Dark fruit, pepper, and the unmistakable taste of something you made yourself."'),
+      d({display:"flex",justifyContent:"center",gap:16,fontSize:11,color:B.dim,marginBottom:16},
+        sp({},"~12.1% ABV"),sp({},"·"),sp({},"6 bottles")),
+      d({fontSize:12,color:B.grape,letterSpacing:".08em",textTransform:"uppercase",
+        fontWeight:600,marginBottom:4},"Certified gluggable"),
+      d({fontSize:10,color:B.dim},"Made with Glug Plonk")
+    ),
+    p({fontSize:13,color:B.grey,lineHeight:1.7,marginBottom:32,maxWidth:300},
+      "You made wine. From scratch. In your kitchen. Batch #002 starts whenever you're ready."),
+    b({background:B.grape,color:B.ink,border:"none",borderRadius:24,
+      padding:"14px 36px",fontSize:14,fontWeight:700,letterSpacing:".04em"},
+      ()=>set({finished:false,stepIdx:0,tab:"home",showWhy:false,showTemp:false}),
+      "Start Batch #002 ↗")
+  );
+}
+
+function BottomNav(){
+  const tabs=[
+    {id:"home",icon:"🏠",label:"Home"},
+    {id:"step",icon:"🍷",label:"Journey"},
+    {id:"log",icon:"📊",label:"Brew Log"},
+    {id:"cellar",icon:"👥",label:"The Cellar"},
+  ];
+  return d({display:"flex",background:"rgba(255,255,255,.96)",
+    backdropFilter:"blur(12px)",borderTop:"1px solid #e0e0f0"},
+    ...tabs.map(t=>b({flex:1,background:"transparent",border:"none",
+      padding:"10px 0 18px",borderTop:S.tab===t.id?`2px solid ${B.grape}`:"2px solid transparent"},
+      ()=>set({tab:t.id}),
+      d({fontSize:20,marginBottom:2},t.icon),
+      d({fontSize:10,color:S.tab===t.id?B.grape:B.dim,fontWeight:S.tab===t.id?600:400},t.label)
+    ))
+  );
+}
+
+// ── Main render ────────────────────────────────────────────────────────────
+function draw(){
+  const app=document.getElementById("app");
+  while(app.firstChild)app.removeChild(app.firstChild);
+
+  if(S.screen==="splash"){app.appendChild(Splash());return;}
+  if(S.screen==="onboard"){app.appendChild(Onboard());return;}
+  if(S.finished){
+    const w=d({height:"100%",overflowY:"auto"});
+    w.appendChild(Vintage());app.appendChild(w);return;
+  }
+  const wrap=d({display:"flex",flexDirection:"column",height:"100%"});
+  const content=S.tab==="home"?Home():S.tab==="step"?Step():S.tab==="log"?Log():Cellar();
+  wrap.appendChild(content);
+  wrap.appendChild(BottomNav());
+  app.appendChild(wrap);
+}
+
+draw();
+</script>
+</body>
+</html>
