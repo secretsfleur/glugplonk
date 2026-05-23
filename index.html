@@ -1,1198 +1,627 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Glug Plonk — Home Winery App</title>
-<meta name="theme-color" content="#0d0d1a">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Glug Plonk — Private Batch</title>
+<meta name="description" content="A cheeky guided home winemaking app.">
+<meta name="theme-color" content="#641032">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#1a1a2e;display:flex;justify-content:center}
-#app{width:100%;max-width:430px;height:100vh;background:#f5f5ff;
-  display:flex;flex-direction:column;overflow:hidden;position:relative}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes celebIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
-.f1{animation:fadeUp .6s ease .1s both}.f2{animation:fadeUp .6s ease .3s both}
-.f3{animation:fadeUp .6s ease .5s both}.f4{animation:fadeUp .6s ease .8s both}
-.f5{animation:fadeUp .6s ease 1.1s both}
-button,input,select,textarea{font-family:inherit}
-::-webkit-scrollbar{width:0;height:0}
-input[type=number]::-webkit-inner-spin-button{opacity:.5}
+:root{--ink:#151216;--wine:#641032;--wine2:#8a1744;--plum:#6b3a5b;--rose:#e8b9b5;--paper:#f8f0df;--paper2:#fffaf0;--lime:#bdc64b;--muted:#7d706a;--line:#e2d5c2;--good:#2f7d51;--warn:#b84638;}
+*{box-sizing:border-box} html,body{margin:0;height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--ink);color:var(--ink);}
+body{display:flex;justify-content:center;align-items:stretch;}
+#app{width:100%;max-width:460px;height:100dvh;background:var(--paper);position:relative;overflow:hidden;box-shadow:0 0 0 1px #0002,0 12px 60px #0007;}
+.app-shell{height:100%;display:flex;flex-direction:column;}
+.main{flex:1;overflow:auto;padding:18px 18px 98px;background:radial-gradient(circle at 10% 0%,#fff8 0 120px,transparent 121px),radial-gradient(circle at 95% 20%,#8a174414 0 80px,transparent 81px),var(--paper);}
+.brand{font-family:Georgia,'Times New Roman',serif;font-weight:800;letter-spacing:-.05em;line-height:.9;}
+.script{font-family:'Comic Sans MS','Bradley Hand',cursive;letter-spacing:.02em;}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:800;}
+.h1{font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:.95;margin:8px 0 10px;letter-spacing:-.04em;}
+.h2{font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.04;margin:0 0 10px;letter-spacing:-.035em;}
+.p{font-size:14px;line-height:1.55;color:#4f443f;margin:0;}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.btn{border:0;border-radius:999px;background:var(--wine);color:white;padding:15px 18px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 8px 22px #64103230;}
+.btn.alt{background:transparent;color:var(--wine);border:1.5px solid var(--wine);box-shadow:none;}
+.btn.lime{background:var(--lime);color:var(--ink);}
+.card{background:var(--paper2);border:1.5px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 8px 22px #4a2b1810;}
+.row{display:flex;gap:12px;align-items:center} .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tag{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff7;border-radius:999px;padding:5px 9px;font-size:11px;color:#5e504a;font-weight:800;}
+.stamp{display:inline-block;border:1.5px solid var(--wine);border-radius:5px;padding:7px 10px;color:var(--wine);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:#fff5;transform:rotate(-1deg);}
+.icon{width:38px;height:38px;border-radius:13px;background:var(--wine);color:white;display:grid;place-items:center;font-family:Georgia,serif;font-weight:900;font-size:18px;box-shadow:inset 0 0 0 1px #fff3;}
+.nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fffaf2ee;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom);}
+.nav button{border:0;background:transparent;color:var(--muted);font-size:10px;font-weight:800;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;}
+.nav .active{color:var(--wine);}
+.nav .plus{width:40px;height:40px;border-radius:999px;background:var(--ink);color:white;font-size:24px;margin-top:8px;}
+.progress{height:8px;background:#eadbc8;border-radius:999px;overflow:hidden} .progress>i{display:block;height:100%;background:var(--wine);border-radius:999px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.journey-card{border:0;border-radius:20px;text-align:left;padding:16px;color:var(--ink);min-height:118px;position:relative;overflow:hidden;box-shadow:0 6px 18px #0001;}
+.journey-card:after{content:'○ ○ ○';position:absolute;right:12px;top:10px;color:#fff9;font-weight:900;letter-spacing:-2px;}
+.field{width:100%;border:1.5px solid var(--line);border-radius:14px;background:#fffaf7;padding:13px 12px;font:inherit;font-size:15px;outline:none;color:var(--ink);}
+input[type=number]{appearance:textfield} .small{font-size:12px;color:var(--muted);line-height:1.45} .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+.issue{border:1.5px solid var(--line);background:#fffaf0;border-radius:16px;padding:13px;text-align:left;}
+.fade{animation:fade .35s ease both} @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:white;border-radius:999px;padding:12px 18px;font-size:13px;font-weight:800;z-index:9;}
+/* Enhancement styles */
+.kit-row{width:100%;border:0;background:transparent;text-align:left;padding:11px 0;border-top:1px solid var(--line);cursor:pointer;display:flex;align-items:center;gap:12px;}
+.kit-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;transition:all .15s;}
+.kit-check.on{background:var(--good);border-color:var(--good);color:white;}
+.log-section{background:var(--paper);border:1.5px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;}
+.celeb-overlay{position:fixed;inset:0;background:var(--wine);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;animation:fade .4s ease both;}
+.modal-overlay{position:fixed;inset:0;background:#0008;z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.modal-sheet{width:100%;max-width:460px;background:var(--paper2);border-radius:24px 24px 0 0;padding:24px;max-height:80vh;overflow-y:auto;animation:slideUp .3s ease both;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes celebPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 </style>
 </head>
 <body><div id="app"></div>
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-// BRAND
-// ═══════════════════════════════════════════════════════════════════════════
-const B={
-  ink:"#0d0d1a",grape:"#ff00ff",cyan:"#00e5ff",cardBg:"#111827",
-  parchment:"#fffbf0",lightBg:"#f5f5ff",warn:"#ff2d55",orange:"#f90",
-  green:"#00c853",gold:"#c4a96b",blue:"#2d2dff",grey:"#cccccc",dim:"#888"
+const DATA = {"journeys": [{"id": "beginners-shiraz", "name": "Beginner's Shiraz", "tagline": "Dark, juicy and forgiving. Your first red with swagger.", "style": "Red · Full-bodied · Lo-fi", "difficulty": "Grape Newbie", "duration_days": 60, "batch_size": "6 litres (approx. 6 bottles)", "target_og": "1.080–1.095", "target_fg": "0.998–1.002", "target_abv": "12–13%", "description": "A beginner-friendly red journey for a bold, drinkable Shiraz. Focuses on clean fermentation, gentle oak and bottle-ready confidence.", "colour": "#6b1235"}, {"id": "cabernet-sauvignon", "name": "Cabernet Sauvignon", "tagline": "Dark, structured, a little serious — but still up for trouble.", "style": "Red · Structured · Small-batch", "difficulty": "Cellar Apprentice", "duration_days": 90, "batch_size": "6 litres (approx. 6 bottles)", "target_og": "1.085–1.100", "target_fg": "0.996–1.002", "target_abv": "12.5–14%", "description": "A bolder red journey for users who want more structure, tannin and cellar energy. Designed for juice or kit concentrate with optional oak and a longer conditioning phase.", "colour": "#3b0b1d"}, {"id": "apartment-white", "name": "Apartment White", "tagline": "Crisp, clean and condo-friendly.", "style": "White · Crisp · Apartment-safe", "difficulty": "Grape Newbie", "duration_days": 45, "batch_size": "6 litres (approx. 6 bottles)", "target_og": "1.070–1.085", "target_fg": "0.996–1.000", "target_abv": "10–12%", "description": "A clean white wine journey built for small spaces and warm apartments. Focuses on cooler fermentation, clarity and bright citrus-style aromatics.", "colour": "#b8bd3b"}, {"id": "lo-fi-rose", "name": "Lo-fi Rosé", "tagline": "Pink, slightly chaotic, dangerously charming.", "style": "Rosé · Juicy · Lo-fi", "difficulty": "Grape Newbie", "duration_days": 50, "batch_size": "6 litres (approx. 6 bottles)", "target_og": "1.072–1.088", "target_fg": "0.996–1.002", "target_abv": "10.5–12.5%", "description": "A playful rosé journey for a juicy, low-drama batch. Keeps extraction light, fermentation lively and the vibe very bottle-shop cool.", "colour": "#e8b9b5"}], "phases": [{"id": "beginners-shiraz-phase-1", "journey_id": "beginners-shiraz", "phase_number": 1, "name": "Prep", "label": "Prep · Day 0 — clean start", "day_range": "Day 0", "color_hex": "#5DCAA5", "temp_note": "Bring juice to 20–22°C before starting. Clean gear first, glory later."}, {"id": "beginners-shiraz-phase-2", "journey_id": "beginners-shiraz", "phase_number": 2, "name": "Primary fermentation", "label": "Primary fermentation · Days 1–14", "day_range": "Days 1–14", "color_hex": "#EF9F27", "temp_note": "Keep it steady at 20–24°C. Warm enough for action, not hot enough for chaos."}, {"id": "beginners-shiraz-phase-3", "journey_id": "beginners-shiraz", "phase_number": 3, "name": "Secondary fermentation", "label": "Secondary fermentation · Days 15–28", "day_range": "Days 15–28", "color_hex": "#7F77DD", "temp_note": "Quiet phase. Less bubbling, more patience."}, {"id": "beginners-shiraz-phase-4", "journey_id": "beginners-shiraz", "phase_number": 4, "name": "Clearing & stabilising", "label": "Clear, stabilise, behave · Days 29–42", "day_range": "Days 29–42", "color_hex": "#D85A30", "temp_note": "Keep it still and cool. Let the haze drop out."}, {"id": "beginners-shiraz-phase-5", "journey_id": "beginners-shiraz", "phase_number": 5, "name": "Conditioning", "label": "Conditioning · Days 43–55", "day_range": "Days 43–55", "color_hex": "#378ADD", "temp_note": "Cool conditioning helps the wine settle and smooth out."}, {"id": "beginners-shiraz-phase-6", "journey_id": "beginners-shiraz", "phase_number": 6, "name": "Bottling & glory", "label": "Bottle & brag · Days 56–60+", "day_range": "Days 56–60+", "color_hex": "#c4a96b", "temp_note": "Bottle cleanly, label proudly, then chill and wait."}, {"id": "cabernet-sauvignon-phase-1", "journey_id": "cabernet-sauvignon", "phase_number": 1, "name": "Prep", "label": "Prep · Day 0 — set the stage", "day_range": "Day 0", "color_hex": "#5DCAA5", "temp_note": "Warm enough for yeast, not warm enough for chaos."}, {"id": "cabernet-sauvignon-phase-2", "journey_id": "cabernet-sauvignon", "phase_number": 2, "name": "Primary fermentation", "label": "Primary fermentation · Days 1–10", "day_range": "Days 1–10", "color_hex": "#EF9F27", "temp_note": "Cabernet likes energy, but hot ferments can get harsh. Keep it controlled."}, {"id": "cabernet-sauvignon-phase-3", "journey_id": "cabernet-sauvignon", "phase_number": 3, "name": "Press / rack", "label": "Rack off the drama · Days 10–14", "day_range": "Days 10–14", "color_hex": "#7F77DD", "temp_note": "Move it cleanly and leave the heavy lees behind."}, {"id": "cabernet-sauvignon-phase-4", "journey_id": "cabernet-sauvignon", "phase_number": 4, "name": "Secondary fermentation", "label": "Secondary fermentation · Days 15–35", "day_range": "Days 15–35", "color_hex": "#D85A30", "temp_note": "Slow, quiet finishing. Less action, more patience."}, {"id": "cabernet-sauvignon-phase-5", "journey_id": "cabernet-sauvignon", "phase_number": 5, "name": "Clearing & stabilising", "label": "Clear, stabilise, behave · Days 36–55", "day_range": "Days 36–55", "color_hex": "#378ADD", "temp_note": "Protect the wine before you bottle your hopes."}, {"id": "cabernet-sauvignon-phase-6", "journey_id": "cabernet-sauvignon", "phase_number": 6, "name": "Conditioning", "label": "Conditioning · let it get handsome · Days 56–90", "day_range": "Days 56–90", "color_hex": "#6B3A5B", "temp_note": "Cabernet improves with a little time. Let the tannins stop shouting."}, {"id": "apartment-white-phase-1", "journey_id": "apartment-white", "phase_number": 1, "name": "Prep", "label": "Prep · Day 0 — cold, clean, calm", "day_range": "Day 0", "color_hex": "#5DCAA5", "temp_note": "White wine rewards clean gear and cool juice."}, {"id": "apartment-white-phase-2", "journey_id": "apartment-white", "phase_number": 2, "name": "Primary fermentation", "label": "Cool primary fermentation · Days 1–14", "day_range": "Days 1–14", "color_hex": "#A6B23C", "temp_note": "Keep it cool to preserve fresh fruit. Singapore apartments may need a water bath."}, {"id": "apartment-white-phase-3", "journey_id": "apartment-white", "phase_number": 3, "name": "First rack", "label": "First rack · leave the sludge · Days 14–18", "day_range": "Days 14–18", "color_hex": "#7F77DD", "temp_note": "Move it gently, protect the aromatics."}, {"id": "apartment-white-phase-4", "journey_id": "apartment-white", "phase_number": 4, "name": "Clearing", "label": "Clearing & brightening · Days 19–32", "day_range": "Days 19–32", "color_hex": "#378ADD", "temp_note": "White wine should look as crisp as it tastes."}, {"id": "apartment-white-phase-5", "journey_id": "apartment-white", "phase_number": 5, "name": "Stabilising", "label": "Stabilising · Days 33–38", "day_range": "Days 33-38", "color_hex": "#D85A30", "temp_note": "A clean finish needs protection."}, {"id": "apartment-white-phase-6", "journey_id": "apartment-white", "phase_number": 6, "name": "Bottle & chill", "label": "Bottle & chill · Days 39–45", "day_range": "Days 39–45", "color_hex": "#6B3A5B", "temp_note": "This one is designed for fridge-door victory."}, {"id": "lo-fi-rose-phase-1", "journey_id": "lo-fi-rose", "phase_number": 1, "name": "Prep", "label": "Prep · Day 0 — pink plans", "day_range": "Day 0", "color_hex": "#E6C7C6", "temp_note": "Fresh, clean, quick. Rosé hates heavy-handedness."}, {"id": "lo-fi-rose-phase-2", "journey_id": "lo-fi-rose", "phase_number": 2, "name": "Primary fermentation", "label": "Primary fermentation · Days 1–10", "day_range": "Days 1–10", "color_hex": "#EF9F27", "temp_note": "Keep it lively but not hot. You want fruit, not stewed jam."}, {"id": "lo-fi-rose-phase-3", "journey_id": "lo-fi-rose", "phase_number": 3, "name": "Rack light", "label": "Rack light, stay bright · Days 10–14", "day_range": "Days 10–14", "color_hex": "#7F77DD", "temp_note": "Gentle movement keeps the pink pretty."}, {"id": "lo-fi-rose-phase-4", "journey_id": "lo-fi-rose", "phase_number": 4, "name": "Secondary fermentation", "label": "Short secondary · Days 15–28", "day_range": "Days 15–28", "color_hex": "#D85A30", "temp_note": "Let it finish without overthinking it."}, {"id": "lo-fi-rose-phase-5", "journey_id": "lo-fi-rose", "phase_number": 5, "name": "Clearing", "label": "Clear the haze · Days 29–40", "day_range": "Days 29–40", "color_hex": "#378ADD", "temp_note": "A little haze is vibe. A lot of haze is a conversation."}, {"id": "lo-fi-rose-phase-6", "journey_id": "lo-fi-rose", "phase_number": 6, "name": "Bottle young", "label": "Bottle young, drink joyful · Days 41–50", "day_range": "Days 41–50", "color_hex": "#6B3A5B", "temp_note": "Rosé is for drinking before it starts writing poetry."}], "steps": [{"id": "apartment-white-step-01", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-1", "step_number": 1, "day_label": "Day 0", "tagline": "No sparkle without clean gear.", "title": "Sanitise everything", "instruction": "Sanitise fermenter, airlock, siphon, spoon, hydrometer tube and bottles-to-be. Let drip-dry.", "coach_message": "No sparkle without clean gear.", "why_text": "White wine shows faults loudly.", "warning_text": "Towels are microbe delivery systems.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-02", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-1", "step_number": 2, "day_label": "Day 0", "tagline": "Cold-ish is chic.", "title": "Cool the juice", "instruction": "Bring juice to 16–20°C. Use a water bath if your apartment is warm.", "coach_message": "Cold-ish is chic.", "why_text": "Cooler fermentation preserves fresh aromatics.", "warning_text": "Above 22°C can taste flat or solventy.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-03", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-1", "step_number": 3, "day_label": "Day 0", "tagline": "The truth stick does not flirt.", "title": "Take original gravity", "instruction": "Record OG. Target 1.070–1.085 for a crisp white.", "coach_message": "The truth stick does not flirt.", "why_text": "OG anchors your ABV calculation.", "warning_text": "If low, dissolve sugar before adding.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-04", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-1", "step_number": 4, "day_label": "Day 0", "tagline": "Clear the room before the yeast DJ arrives.", "title": "Add Campden and enzyme", "instruction": "Add one crushed Campden tablet and pectic enzyme. Cover for 24 hours.", "coach_message": "Clear the room before the yeast DJ arrives.", "why_text": "Protects juice and helps clarity.", "warning_text": "Wait 24 hours before yeast.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-05", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-2", "step_number": 5, "day_label": "Day 1", "tagline": "The perfume department is open.", "title": "Pitch white wine yeast", "instruction": "Sprinkle yeast, wait 15 minutes, stir gently, fit airlock.", "coach_message": "The perfume department is open.", "why_text": "Yeast choice shapes aroma.", "warning_text": "Do not pitch into hot juice.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-06", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-2", "step_number": 6, "day_label": "Days 2–3", "tagline": "Quiet fermentation is still fermentation.", "title": "Check gentle activity", "instruction": "Look for bubbles or gravity movement. Keep 16–20°C.", "coach_message": "Quiet fermentation is still fermentation.", "why_text": "White ferments can be less dramatic.", "warning_text": "No bubbles? Check gravity, not vibes.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-07", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-2", "step_number": 7, "day_label": "Days 4–7", "tagline": "Apartment winemaking: spa day for yeast.", "title": "Keep it cool", "instruction": "Check daily temperature. Use a wet towel or water bath if needed.", "coach_message": "Apartment winemaking: spa day for yeast.", "why_text": "Heat strips freshness.", "warning_text": "Avoid direct sun and kitchen heat.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-08", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-2", "step_number": 8, "day_label": "Day 7", "tagline": "Data today, crisp wine tomorrow.", "title": "Mid-ferment reading", "instruction": "Record gravity, smell and clarity. Expect steady drop.", "coach_message": "Data today, crisp wine tomorrow.", "why_text": "A slowing sugar drop tells you how fermentation is progressing.", "warning_text": "Vinegar or rotten-egg smell needs troubleshooting.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-09", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-2", "step_number": 9, "day_label": "Days 10–14", "tagline": "Almost dry, still shy.", "title": "Wait for dry finish", "instruction": "When gravity approaches 1.000 or below, prepare to rack.", "coach_message": "Almost dry, still shy.", "why_text": "Whites need a clean finish before racking.", "warning_text": "Do not rush if gravity is still falling.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-10", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-3", "step_number": 10, "day_label": "Days 14–18", "tagline": "Leave the sludge. Take the glow.", "title": "Rack off sediment", "instruction": "Siphon into clean carboy, leaving sediment. Top up if possible.", "coach_message": "Leave the sludge. Take the glow.", "why_text": "Racking reduces off-flavours and helps clarity.", "warning_text": "Minimise splashing.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-11", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-4", "step_number": 11, "day_label": "Days 19–25", "tagline": "Let gravity do the admin.", "title": "Clear naturally", "instruction": "Let wine settle somewhere cool. Optional bentonite if hazy.", "coach_message": "Let gravity do the admin.", "why_text": "Solids drop out with time and cool storage.", "warning_text": "Do not shake the carboy.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-12", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-4", "step_number": 12, "day_label": "Days 26–32", "tagline": "Read the newspaper through your wine. Very normal.", "title": "Clarity check", "instruction": "Hold a sample against text. If you can read through it, you are close.", "coach_message": "Read the newspaper through your wine. Very normal.", "why_text": "Clarity matters more for white styles.", "warning_text": "Haze can be pectin, yeast or protein.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-13", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-5", "step_number": 13, "day_label": "Days 33–36", "tagline": "Protect the fresh stuff.", "title": "Stabilise", "instruction": "Add Campden as instructed. If back-sweetening, stabilise fully first.", "coach_message": "Protect the fresh stuff.", "why_text": "White wine oxidises faster than reds.", "warning_text": "Do not sweeten unstabilised wine.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-14", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-5", "step_number": 14, "day_label": "Day 38", "tagline": "Crisp little number, hopefully.", "title": "Final gravity and taste", "instruction": "Record FG and tasting notes. Calculate ABV.", "coach_message": "Crisp little number, hopefully.", "why_text": "FG confirms fermentation is complete.", "warning_text": "If gravity changes over 3 days, wait.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-15", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-6", "step_number": 15, "day_label": "Days 39–45", "tagline": "Fridge-door trophy unlocked.", "title": "Bottle", "instruction": "Bottle cleanly. Keep one bottle chilled for first tasting.", "coach_message": "Fridge-door trophy unlocked.", "why_text": "Bottling closes the journey and starts the memory.", "warning_text": "Avoid oxygen-heavy splashing.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "apartment-white-step-16", "journey_id": "apartment-white", "phase_id": "apartment-white-phase-6", "step_number": 16, "day_label": "Day 45+", "tagline": "You made apartment wine. Iconic.", "title": "First chill and taste", "instruction": "Chill, pour, taste and create the vintage card.", "coach_message": "You made apartment wine. Iconic.", "why_text": "Early tasting helps improve the next batch.", "warning_text": "If sharp, give it another week.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-01", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-1", "step_number": 1, "day_label": "Day 0", "tagline": "No clean, no cult wine.", "title": "Sanitise everything", "instruction": "Sanitise fermenter, airlock, siphon, spoon, hydrometer tube and funnel. Let drip-dry.", "coach_message": "No clean, no cult wine.", "why_text": "Most beginner failures start on dirty gear.", "warning_text": "No towel drying. Towels carry microbes.", "celebration_text": "", "timer_label": "45 min", "temperature_note": ""}, {"id": "beginners-shiraz-step-02", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-1", "step_number": 2, "day_label": "Day 0", "tagline": "The truth stick does not flatter.", "title": "Take original gravity", "instruction": "Record OG. Target 1.080–1.095 for a bold Shiraz.", "coach_message": "The truth stick does not flatter.", "why_text": "OG anchors your ABV calculation.", "warning_text": "Read at eye level.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-03", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-1", "step_number": 3, "day_label": "Day 0", "tagline": "Clear the room before yeast arrives.", "title": "Add Campden", "instruction": "Add one crushed Campden tablet. Cover and wait 24 hours.", "coach_message": "Clear the room before yeast arrives.", "why_text": "Campden protects the juice before fermentation.", "warning_text": "Wait before pitching yeast.", "celebration_text": "", "timer_label": "24 hours", "temperature_note": ""}, {"id": "beginners-shiraz-step-04", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-1", "step_number": 4, "day_label": "Day 0", "tagline": "Clear wine starts early.", "title": "Add pectic enzyme", "instruction": "Add pectic enzyme with the Campden. Stir gently.", "coach_message": "Clear wine starts early.", "why_text": "Pectic enzyme helps prevent haze.", "warning_text": "Measure it. More is not better.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-05", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 5, "day_label": "Day 1", "tagline": "The tiny workforce clocks in.", "title": "Pitch the yeast", "instruction": "Sprinkle yeast, wait 15 minutes, stir gently, fit airlock.", "coach_message": "The tiny workforce clocks in.", "why_text": "Yeast turns sugar into alcohol and CO₂.", "warning_text": "Do not pitch into hot juice.", "celebration_text": "Primary starts now. Your batch is alive.", "timer_label": "15 min surface rest", "temperature_note": ""}, {"id": "beginners-shiraz-step-06", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 6, "day_label": "Days 2–3", "tagline": "Your batch is alive. Probably.", "title": "Check airlock activity", "instruction": "Look for bubbles or gravity movement. Keep 20–24°C.", "coach_message": "Your batch is alive. Probably.", "why_text": "Bubbles are useful, but gravity tells the truth.", "warning_text": "No bubbles? Check the bung and take gravity.", "celebration_text": "", "timer_label": "Watch for 48 hrs", "temperature_note": ""}, {"id": "beginners-shiraz-step-07", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 7, "day_label": "Day 3", "tagline": "No hangry yeast.", "title": "Add yeast nutrient", "instruction": "Add 1 level teaspoon of nutrient. Stir gently and refit airlock.", "coach_message": "No hangry yeast.", "why_text": "Nutrient helps yeast finish cleanly.", "warning_text": "Keep everything sanitised.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-08", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 8, "day_label": "Day 7", "tagline": "Data today, swagger tomorrow.", "title": "Mid-ferment reading", "instruction": "Record gravity, temperature and notes. Expect a steady drop.", "coach_message": "Data today, swagger tomorrow.", "why_text": "Gravity trend shows fermentation progress.", "warning_text": "Use a sanitised sample tool.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-09", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 9, "day_label": "Day 10", "tagline": "Sniff the drama.", "title": "Check colour and smell", "instruction": "Log colour and aroma. Expect young, fruity and a little rough.", "coach_message": "Sniff the drama.", "why_text": "Smell catches problems early.", "warning_text": "Vinegar or rotten egg needs troubleshooting.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-10", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-2", "step_number": 10, "day_label": "Day 14", "tagline": "Almost wine. Behave.", "title": "Check primary finish", "instruction": "Take gravity. Repeat in 24 hours. Stable and near 1.010 or lower means primary is done.", "coach_message": "Almost wine. Behave.", "why_text": "Stable gravity confirms fermentation has slowed properly.", "warning_text": "If gravity is stuck high, troubleshoot before racking.", "celebration_text": "Primary done. The juice is officially becoming wine.", "timer_label": "Two readings 24 hrs apart", "temperature_note": ""}, {"id": "beginners-shiraz-step-11", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-3", "step_number": 11, "day_label": "Day 15", "tagline": "Leave the sludge. Take the wine.", "title": "First rack", "instruction": "Siphon into a clean carboy, leaving sediment behind.", "coach_message": "Leave the sludge. Take the wine.", "why_text": "Racking reduces off-flavours and clears the wine.", "warning_text": "Avoid splashing.", "celebration_text": "", "timer_label": "30 min", "temperature_note": ""}, {"id": "beginners-shiraz-step-12", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-3", "step_number": 12, "day_label": "Day 15", "tagline": "No air, no drama.", "title": "Top up the carboy", "instruction": "Reduce headspace with similar wine or sanitised marbles if needed.", "coach_message": "No air, no drama.", "why_text": "Less oxygen means fresher wine.", "warning_text": "Do not top up with plain water unless desperate.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-13", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-3", "step_number": 12.5, "day_label": "Day 15", "tagline": "Tiny barrel cosplay.", "title": "Add oak chips", "instruction": "Rinse 12–24g oak with boiling water, cool, then add in a sanitised bag.", "coach_message": "Tiny barrel cosplay.", "why_text": "Oak adds toast, spice and structure.", "warning_text": "Taste weekly. Oak can get loud.", "celebration_text": "", "timer_label": "Taste check every 5–7 days", "temperature_note": ""}, {"id": "beginners-shiraz-step-14", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-3", "step_number": 13, "day_label": "Day 21", "tagline": "Quiet does not mean dead.", "title": "Check secondary", "instruction": "Record gravity and smell. Expect slow movement or calm stability.", "coach_message": "Quiet does not mean dead.", "why_text": "Secondary fermentation is slower and less showy.", "warning_text": "If gravity rises or smells bad, troubleshoot.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-15", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-3", "step_number": 14, "day_label": "Day 28", "tagline": "Maths, but make it red.", "title": "Confirm final gravity", "instruction": "Take two gravity readings 24 hours apart. Target 0.998–1.002.", "coach_message": "Maths, but make it red.", "why_text": "Stable FG lets the app calculate ABV.", "warning_text": "Do not bottle unstable wine.", "celebration_text": "Fermentation done. ABV unlocked.", "timer_label": "Two readings 24 hrs apart", "temperature_note": ""}, {"id": "beginners-shiraz-step-16", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-4", "step_number": 15, "day_label": "Day 29", "tagline": "Protect the red stuff.", "title": "Stabilise", "instruction": "Add Campden as instructed and stir gently.", "coach_message": "Protect the red stuff.", "why_text": "Finished wine needs oxygen protection.", "warning_text": "Do not over-stir.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-17", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-4", "step_number": 16, "day_label": "Day 30", "tagline": "Let gravity do the admin.", "title": "Add fining agent", "instruction": "Add bentonite or fining agent if the wine is hazy. Follow packet instructions.", "coach_message": "Let gravity do the admin.", "why_text": "Fining helps suspended particles settle.", "warning_text": "Do not move the carboy after fining.", "celebration_text": "", "timer_label": "7–10 days", "temperature_note": ""}, {"id": "beginners-shiraz-step-18", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-4", "step_number": 16.5, "day_label": "Days 22–34", "tagline": "Oak is seasoning, not a personality.", "title": "Oak taste check", "instruction": "Taste a small sample. Rack off oak when spice and toast feel balanced.", "coach_message": "Oak is seasoning, not a personality.", "why_text": "Oak contact time controls intensity.", "warning_text": "If it tastes like vanilla extract, rack now.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-19", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-4", "step_number": 17, "day_label": "Day 38", "tagline": "Shine a light on it.", "title": "Clarity check", "instruction": "Hold a sample against light or text. Log clarity.", "coach_message": "Shine a light on it.", "why_text": "Clearer wine bottles better and looks more polished.", "warning_text": "A little haze is not the end.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-20", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-4", "step_number": 18, "day_label": "Day 40", "tagline": "Clean wine, clean room.", "title": "Second rack", "instruction": "Rack into a clean carboy, leaving fining sediment behind.", "coach_message": "Clean wine, clean room.", "why_text": "This removes the last heavy sediment before conditioning.", "warning_text": "Move slowly; fine sediment resuspends fast.", "celebration_text": "", "timer_label": "30 min", "temperature_note": ""}, {"id": "beginners-shiraz-step-21", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-5", "step_number": 19, "day_label": "Days 43–53", "tagline": "Cool down, show off later.", "title": "Cold condition", "instruction": "Move the carboy to 10–14°C and leave it undisturbed.", "coach_message": "Cool down, show off later.", "why_text": "Cool conditioning helps tartrates and haze drop out.", "warning_text": "Do not freeze the wine.", "celebration_text": "", "timer_label": "7–10 days", "temperature_note": ""}, {"id": "beginners-shiraz-step-22", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-5", "step_number": 20, "day_label": "Day 53", "tagline": "Is it bold or just loud?", "title": "Final taste and adjust", "instruction": "Taste. If flat, adjust acid carefully. If thin, consider tannin. Wait before changing more.", "coach_message": "Is it bold or just loud?", "why_text": "Small adjustments can polish the final wine.", "warning_text": "Add little, wait, taste again.", "celebration_text": "", "timer_label": "30 min", "temperature_note": ""}, {"id": "beginners-shiraz-step-23", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-6", "step_number": 21, "day_label": "Day 56", "tagline": "Bottling day needs discipline.", "title": "Sanitise bottles", "instruction": "Sanitise bottles, corker, siphon and filler. Let drip-dry.", "coach_message": "Bottling day needs discipline.", "why_text": "Bottles are the final contamination risk.", "warning_text": "Reject dirty or damaged bottles.", "celebration_text": "", "timer_label": "1 hour", "temperature_note": ""}, {"id": "beginners-shiraz-step-24", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-6", "step_number": 22, "day_label": "Day 56", "tagline": "Six bottles. Tiny empire.", "title": "Bottle your wine", "instruction": "Siphon into bottles, leaving about 2cm headspace. Seal cleanly.", "coach_message": "Six bottles. Tiny empire.", "why_text": "Good filling limits oxygen exposure.", "warning_text": "Work steadily once bottling starts.", "celebration_text": "", "timer_label": "1–2 hours", "temperature_note": ""}, {"id": "beginners-shiraz-step-25", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-6", "step_number": 23, "day_label": "Day 57", "tagline": "Label the legend.", "title": "Create vintage card", "instruction": "Add batch name, ABV, tasting notes and a photo. Label the bottles.", "coach_message": "Label the legend.", "why_text": "A vintage card turns the batch into a story.", "warning_text": "Do not skip the date and ABV.", "celebration_text": "Batch labelled. Cult drop energy achieved.", "timer_label": "", "temperature_note": ""}, {"id": "beginners-shiraz-step-26", "journey_id": "beginners-shiraz", "phase_id": "beginners-shiraz-phase-6", "step_number": 24, "day_label": "Day 60+", "tagline": "Patience is rude but useful.", "title": "First bottle taste", "instruction": "Wait at least 4 weeks if you can. Chill slightly, pour and log the first taste.", "coach_message": "Patience is rude but useful.", "why_text": "Bottle shock fades with time.", "warning_text": "If sharp, give it another month.", "celebration_text": "You made Shiraz. Actual Shiraz. Brag politely.", "timer_label": "4–6 weeks", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-01", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-1", "step_number": 1, "day_label": "Day 0", "tagline": "Clean gear. Dark wine. No drama.", "title": "Sanitise everything", "instruction": "Clean all vessels, airlocks, siphon, spoon, hydrometer tube and funnel. Let everything drip-dry before touching juice.", "coach_message": "Clean gear. Dark wine. No drama.", "why_text": "If the gear is dirty, Cabernet becomes expensive vinegar.", "warning_text": "Do not towel dry; towels reintroduce microbes.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-02", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-1", "step_number": 2, "day_label": "Day 0", "tagline": "Cabernet likes a confident room, not a sauna.", "title": "Check juice temperature", "instruction": "Bring juice to 20–24°C before measuring and pitching. Record the temperature.", "coach_message": "Cabernet likes a confident room, not a sauna.", "why_text": "Yeast performs best in its preferred temperature band.", "warning_text": "If above 25°C, cool before pitching.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-03", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-1", "step_number": 3, "day_label": "Day 0", "tagline": "The truth stick speaks.", "title": "Take original gravity", "instruction": "Fill the test tube, float the hydrometer and record OG. Target 1.085–1.100.", "coach_message": "The truth stick speaks.", "why_text": "OG lets the app calculate ABV later.", "warning_text": "Read at eye level.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-04", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-1", "step_number": 4, "day_label": "Day 0", "tagline": "Evict the freeloaders before yeast arrives.", "title": "Add Campden and pectic enzyme", "instruction": "Crush one Campden tablet, dissolve, stir in. Add pectic enzyme. Cover with cloth for 24 hours.", "coach_message": "Evict the freeloaders before yeast arrives.", "why_text": "Sulphite suppresses wild microbes; enzyme helps clarity.", "warning_text": "Do not pitch yeast immediately after Campden.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-05", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-2", "step_number": 5, "day_label": "Day 1", "tagline": "Tiny workers have entered the building.", "title": "Pitch the yeast", "instruction": "Sprinkle yeast over the surface. Wait 15 minutes, then stir gently and fit the airlock.", "coach_message": "Tiny workers have entered the building.", "why_text": "Yeast converts sugar into alcohol and CO₂.", "warning_text": "Avoid hot juice; it can stun yeast.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-06", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-2", "step_number": 6, "day_label": "Days 2–3", "tagline": "Your batch should be gossiping by now.", "title": "Check fermentation signs", "instruction": "Look for bubbles, foam or gravity movement. Record smell and temperature.", "coach_message": "Your batch should be gossiping by now.", "why_text": "Activity confirms yeast is awake.", "warning_text": "No bubbles can also mean a loose seal; check gravity before panic.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-07", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-2", "step_number": 7, "day_label": "Days 3–7", "tagline": "Keep the cap wet. Keep it civilised.", "title": "Punch down or swirl daily", "instruction": "If fermenting on skins or pulp, push the cap down once or twice daily. If juice-only, swirl gently.", "coach_message": "Keep the cap wet. Keep it civilised.", "why_text": "Dry caps invite oxygen and spoilage microbes.", "warning_text": "Sanitise anything that touches the wine.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-08", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-2", "step_number": 8, "day_label": "Day 7", "tagline": "Data today, swagger tomorrow.", "title": "Mid-ferment gravity check", "instruction": "Take a gravity reading. Expect steady drop. Log temperature and aroma.", "coach_message": "Data today, swagger tomorrow.", "why_text": "Trend matters more than bubbles.", "warning_text": "If gravity has not moved, use troubleshooting.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-09", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-2", "step_number": 9, "day_label": "Days 9–10", "tagline": "The loud bit is nearly over.", "title": "Wait until primary slows", "instruction": "When bubbling slows and gravity approaches 1.010–1.020, prepare to rack.", "coach_message": "The loud bit is nearly over.", "why_text": "Racking too early can stress fermentation; too late can pick up harsh lees.", "warning_text": "Do not bottle here. It is not finished.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-10", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-3", "step_number": 10, "day_label": "Days 10–14", "tagline": "Move wine without stirring the drama.", "title": "Rack to secondary", "instruction": "Siphon wine into a clean carboy, leaving heavy sediment behind. Fit airlock.", "coach_message": "Move wine without stirring the drama.", "why_text": "Less sediment means cleaner ageing.", "warning_text": "Avoid splashing; oxygen is not invited.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-11", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-3", "step_number": 11, "day_label": "Day 14", "tagline": "Tiny barrel cosplay.", "title": "Optional oak decision", "instruction": "Taste a small sample. Add 5–10g oak chips in a sanitised bag if you want cedar and spice.", "coach_message": "Tiny barrel cosplay.", "why_text": "Oak can round out Cabernet structure.", "warning_text": "Too much oak makes plank soup.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-12", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-4", "step_number": 12, "day_label": "Days 15–35", "tagline": "Patience is a flavour ingredient.", "title": "Let secondary finish", "instruction": "Keep under airlock until gravity is stable for 3 days around 0.996–1.002.", "coach_message": "Patience is a flavour ingredient.", "why_text": "Stable gravity means fermentation has finished.", "warning_text": "Do not trust bubbles alone.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-13", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-4", "step_number": 13, "day_label": "Day 35", "tagline": "Is it moody or magnificent?", "title": "Taste and note structure", "instruction": "Taste a small sample. Note fruit, tannin, acid and any faults.", "coach_message": "Is it moody or magnificent?", "why_text": "Early tasting guides later adjustments.", "warning_text": "Spit if needed; this is science, allegedly.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-14", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-5", "step_number": 14, "day_label": "Days 36–45", "tagline": "Clean lines. Less chaos.", "title": "Stabilise and clear", "instruction": "Rack again if needed. Add Campden according to your kit instructions and let clear.", "coach_message": "Clean lines. Less chaos.", "why_text": "Stabilising protects finished wine.", "warning_text": "Do not add sugar unless wine is stabilised.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-15", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-5", "step_number": 15, "day_label": "Days 46–55", "tagline": "Maths, but make it wine.", "title": "Final gravity and ABV", "instruction": "Take final gravity. The app calculates ABV from OG and FG.", "coach_message": "Maths, but make it wine.", "why_text": "ABV = (OG - FG) × 131.25.", "warning_text": "If FG is not stable, wait.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "cabernet-sauvignon-step-16", "journey_id": "cabernet-sauvignon", "phase_id": "cabernet-sauvignon-phase-6", "step_number": 16, "day_label": "Days 56–90", "tagline": "The cult drop is born.", "title": "Bottle and condition", "instruction": "Bottle cleanly, label the batch and condition for at least 4 weeks before judging.", "coach_message": "The cult drop is born.", "why_text": "Cabernet softens with time in bottle.", "warning_text": "Keep bottles cool and away from light.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-01", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-1", "step_number": 1, "day_label": "Day 0", "tagline": "Pink wine still hates dirty gear.", "title": "Sanitise everything", "instruction": "Sanitise all vessels, airlocks, siphon, spoon, hydrometer and funnel. Let drip-dry.", "coach_message": "Pink wine still hates dirty gear.", "why_text": "Rosé is delicate enough to show flaws.", "warning_text": "No towel drying.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-02", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-1", "step_number": 2, "day_label": "Day 0", "tagline": "Pick your pink personality.", "title": "Check colour and temperature", "instruction": "Bring juice to 18–22°C. Note colour: pale pink, salmon or ruby.", "coach_message": "Pick your pink personality.", "why_text": "Colour guides style and extraction choices.", "warning_text": "Too warm can dull fruit.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-03", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-1", "step_number": 3, "day_label": "Day 0", "tagline": "Truth stick, pink edition.", "title": "Take original gravity", "instruction": "Record OG. Target 1.072–1.088.", "coach_message": "Truth stick, pink edition.", "why_text": "OG unlocks the ABV calculation.", "warning_text": "Read at eye level.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-04", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-1", "step_number": 4, "day_label": "Day 0", "tagline": "The bouncer has a blush jacket.", "title": "Add Campden and enzyme", "instruction": "Add one crushed Campden tablet and pectic enzyme. Cover for 24 hours.", "coach_message": "The bouncer has a blush jacket.", "why_text": "Clean start, cleaner finish.", "warning_text": "Wait before pitching yeast.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-05", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-2", "step_number": 5, "day_label": "Day 1", "tagline": "The pink party starts now.", "title": "Pitch yeast", "instruction": "Add yeast, wait 15 minutes, stir gently and fit airlock.", "coach_message": "The pink party starts now.", "why_text": "Yeast builds the aromatics and alcohol.", "warning_text": "Do not over-stir oxygen into it.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-06", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-2", "step_number": 6, "day_label": "Days 2–3", "tagline": "Your batch is alive. Probably.", "title": "Check signs of life", "instruction": "Log bubbles, smell and temperature.", "coach_message": "Your batch is alive. Probably.", "why_text": "Activity plus gravity trend confirms fermentation.", "warning_text": "No bubbles does not always mean failure.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-07", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-2", "step_number": 7, "day_label": "Days 3–6", "tagline": "Fruit, not jam. That is the brief.", "title": "Keep fruit fresh", "instruction": "Keep 18–22°C and out of sunlight. Swirl gently if needed.", "coach_message": "Fruit, not jam. That is the brief.", "why_text": "Cooler ferments preserve strawberry and citrus notes.", "warning_text": "Hot rooms can make it taste cooked.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-08", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-2", "step_number": 8, "day_label": "Day 7", "tagline": "Smells weird? Could be genius. Could be trouble.", "title": "Mid-ferment reading", "instruction": "Record gravity and aroma. Taste a tiny sample if brave.", "coach_message": "Smells weird? Could be genius. Could be trouble.", "why_text": "Midpoint data helps catch stuck ferments.", "warning_text": "Rotten egg means yeast stress.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-09", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-2", "step_number": 9, "day_label": "Days 9–10", "tagline": "Time to leave the noise behind.", "title": "Prepare to rack", "instruction": "When gravity is near 1.010 or lower, set up clean secondary vessel.", "coach_message": "Time to leave the noise behind.", "why_text": "Short primary keeps rosé bright.", "warning_text": "Do not bottle yet.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-10", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-3", "step_number": 10, "day_label": "Days 10–14", "tagline": "Gentle. This is pink, not powerlifting.", "title": "Rack gently", "instruction": "Siphon to a clean carboy, leaving sediment behind.", "coach_message": "Gentle. This is pink, not powerlifting.", "why_text": "Less sediment keeps flavours clean.", "warning_text": "Avoid splashing and colour-browning.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-11", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-4", "step_number": 11, "day_label": "Days 15–24", "tagline": "Let it finish its little monologue.", "title": "Finish under airlock", "instruction": "Let fermentation finish until gravity is stable around 0.996–1.002.", "coach_message": "Let it finish its little monologue.", "why_text": "Stable gravity prevents bottle bombs.", "warning_text": "If still changing, keep waiting.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-12", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-4", "step_number": 12, "day_label": "Day 25", "tagline": "Is it charming or just pink?", "title": "Taste for balance", "instruction": "Taste for fruit, acid and sweetness. Note if flat or sharp.", "coach_message": "Is it charming or just pink?", "why_text": "Balance determines whether acid or sweetness adjustment is needed.", "warning_text": "Adjust gently; rosé is easy to overdo.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-13", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-5", "step_number": 13, "day_label": "Days 29–34", "tagline": "Haze can be vibe. Chunks are not.", "title": "Clear the haze", "instruction": "Let it settle cool. Use fining only if haze bothers you.", "coach_message": "Haze can be vibe. Chunks are not.", "why_text": "Clearing improves polish and shelf stability.", "warning_text": "Do not chase crystal clarity at all costs.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-14", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-5", "step_number": 14, "day_label": "Days 35–40", "tagline": "Sweetness needs seatbelts.", "title": "Stabilise if sweetening", "instruction": "Add Campden and stabiliser according to kit instructions before any sugar.", "coach_message": "Sweetness needs seatbelts.", "why_text": "Unstabilised sweet wine can restart fermentation.", "warning_text": "Never sweeten then bottle immediately.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-15", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-6", "step_number": 15, "day_label": "Days 41–45", "tagline": "Bottle the chaos while it is cute.", "title": "Bottle young", "instruction": "Bottle when clear enough and gravity is stable.", "coach_message": "Bottle the chaos while it is cute.", "why_text": "Rosé is best young and fresh.", "warning_text": "Keep cool and away from light.", "celebration_text": "", "timer_label": "", "temperature_note": ""}, {"id": "lo-fi-rose-step-16", "journey_id": "lo-fi-rose", "phase_id": "lo-fi-rose-phase-6", "step_number": 16, "day_label": "Day 50+", "tagline": "Cult drop unlocked.", "title": "Create vintage card", "instruction": "Add tasting notes, label name, ABV and a photo.", "coach_message": "Cult drop unlocked.", "why_text": "The vintage card turns a batch into a story.", "warning_text": "Drink with snacks and no snobbery.", "celebration_text": "", "timer_label": "", "temperature_note": ""}], "ingredients": [{"journey_id": "apartment-white", "sort_order": 1, "name": "White grape juice or white wine kit", "quantity": "6 litres", "unit": "litres", "description": "Neutral white grape juice or a white wine concentrate kit.", "cheeky_note": "Clean canvas, tiny apartment winery.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 2, "name": "White wine yeast", "quantity": "1", "unit": "sachet", "description": "Lalvin QA23, D47, EC-1118 or kit yeast. Prioritise clean aromatics.", "cheeky_note": "The perfume department.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 3, "name": "Campden tablets", "quantity": "3", "unit": "tablets", "description": "Protection before fermentation, after racking and before bottling.", "cheeky_note": "Security for your citrus dreams.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 4, "name": "Yeast nutrient", "quantity": "1", "unit": "tsp", "description": "Helps prevent stressed yeast in warm homes.", "cheeky_note": "Tiny vitamins for tiny workers.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 5, "name": "Pectic enzyme", "quantity": "0.5", "unit": "tsp", "description": "Supports brightness and clarity.", "cheeky_note": "Cloud control.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 6, "name": "Bentonite", "quantity": "1", "unit": "tsp", "description": "Optional fining agent for clearer white wine.", "cheeky_note": "The white-wine filter fairy.", "essential": false}, {"journey_id": "apartment-white", "sort_order": 7, "name": "Sugar", "quantity": "as needed", "unit": "g", "description": "Only if gravity is low. Dissolve fully before adding.", "cheeky_note": "ABV top-up, not a shortcut.", "essential": false}, {"journey_id": "apartment-white", "sort_order": 8, "name": "Sparkling water for tasting day", "quantity": "1", "unit": "bottle", "description": "Optional for serving spritz-style samples.", "cheeky_note": "Not traditional. Very fun.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 1, "name": "Shiraz grape juice", "quantity": "6 litres", "unit": "litres", "description": "Your bold red base. Use preservative-free juice or a quality kit concentrate.", "cheeky_note": "Big red energy.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 2, "name": "Wine yeast", "quantity": "1", "unit": "sachet", "description": "EC-1118, Lalvin 71B or kit yeast. Choose reliable over romantic.", "cheeky_note": "Not bread yeast. Never.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 3, "name": "Campden tablets", "quantity": "3", "unit": "tablets", "description": "Used before fermentation, after racking and before bottling.", "cheeky_note": "Tiny tablet, big bouncer.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 4, "name": "Yeast nutrient", "quantity": "1", "unit": "tsp", "description": "Keeps fermentation steady and reduces stuck-ferment risk.", "cheeky_note": "Snacks for the tiny workforce.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 5, "name": "Pectic enzyme", "quantity": "0.5", "unit": "tsp", "description": "Helps the wine clear and improves juice extraction.", "cheeky_note": "The haze negotiator.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 6, "name": "Fining agent", "quantity": "As per packet", "unit": "", "description": "Optional. Bentonite or isinglass helps polish a hazy batch.", "cheeky_note": "Glow-up powder.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 7, "name": "Tartaric acid", "quantity": "Small amount", "unit": "", "description": "Optional. Use only if the finished wine tastes flat.", "cheeky_note": "Zing, not violence.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 8, "name": "Wine tannin", "quantity": "Pinch", "unit": "", "description": "Optional. Adds grip if the wine tastes thin.", "cheeky_note": "Backbone in a pinch.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 9, "name": "Oak chips or cubes", "quantity": "12–24", "unit": "g", "description": "Optional. Adds vanilla, toast and spice during conditioning.", "cheeky_note": "Tiny barrel cosplay.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 10, "name": "Boiling water for oak", "quantity": "500", "unit": "ml", "description": "For rinsing oak before adding. Not glamorous, still useful.", "cheeky_note": "Hot water. No drama.", "essential": false}, {"journey_id": "cabernet-sauvignon", "sort_order": 1, "name": "Cabernet Sauvignon juice or kit concentrate", "quantity": "6 litres", "unit": "litres", "description": "Your bold red base. Use preservative-free juice or a quality kit concentrate.", "cheeky_note": "Big red energy. Handle with respect.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 2, "name": "Red wine yeast", "quantity": "1", "unit": "sachet", "description": "Lalvin RC212, BM4x4, EC-1118 or kit yeast. Choose reliability for prototype batches.", "cheeky_note": "Not bread yeast. Never bread yeast.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 3, "name": "Campden tablets", "quantity": "3", "unit": "tablets", "description": "Used for pre-ferment protection, racking and bottling stability.", "cheeky_note": "Tiny tablet, big bouncer energy.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 4, "name": "Yeast nutrient", "quantity": "1", "unit": "tsp", "description": "Keeps fermentation steady and reduces stuck-ferment risk.", "cheeky_note": "Snacks for the tiny workforce.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 5, "name": "Pectic enzyme", "quantity": "0.5", "unit": "tsp", "description": "Helps clarity and extraction, especially for fruit or grape must.", "cheeky_note": "The haze negotiator.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 6, "name": "Oak chips or cube", "quantity": "5–10", "unit": "g", "description": "Optional. Adds cedar, spice and structure during conditioning.", "cheeky_note": "Fake barrel, real swagger.", "essential": false}, {"journey_id": "cabernet-sauvignon", "sort_order": 7, "name": "Wine tannin", "quantity": "0.25", "unit": "tsp", "description": "Optional if the juice tastes thin. Use carefully.", "cheeky_note": "Structure, not punishment.", "essential": false}, {"journey_id": "cabernet-sauvignon", "sort_order": 8, "name": "Sugar", "quantity": "as needed", "unit": "g", "description": "Only if OG is below target. Dissolve before adding.", "cheeky_note": "Boosts alcohol, not personality.", "essential": false}, {"journey_id": "lo-fi-rose", "sort_order": 1, "name": "Rosé juice, red/white blend or light red kit", "quantity": "6 litres", "unit": "litres", "description": "A pink base with light colour and fresh fruit. Avoid overly heavy red must.", "cheeky_note": "Pink chaos in a bucket.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 2, "name": "Rosé-friendly wine yeast", "quantity": "1", "unit": "sachet", "description": "Lalvin 71B, QA23, EC-1118 or kit yeast. 71B gives juicy fruit.", "cheeky_note": "Tiny party starter.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 3, "name": "Campden tablets", "quantity": "3", "unit": "tablets", "description": "Protects the must and finished wine from wild spoilage.", "cheeky_note": "Bouncer, but wearing pink.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 4, "name": "Yeast nutrient", "quantity": "1", "unit": "tsp", "description": "Keeps fermentation confident and clean.", "cheeky_note": "No hangry yeast.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 5, "name": "Pectic enzyme", "quantity": "0.5", "unit": "tsp", "description": "Reduces haze and helps juice settle.", "cheeky_note": "For the glow-up.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 6, "name": "Acid blend or tartaric acid", "quantity": "0.25", "unit": "tsp", "description": "Optional. Use only if the wine tastes flat after fermentation.", "cheeky_note": "Zing, not violence.", "essential": false}, {"journey_id": "lo-fi-rose", "sort_order": 7, "name": "Sugar", "quantity": "as needed", "unit": "g", "description": "Only if OG needs a lift or you back-sweeten after stabilising.", "cheeky_note": "Sweetness with consequences.", "essential": false}, {"journey_id": "lo-fi-rose", "sort_order": 8, "name": "Bottle labels / stickers", "quantity": "6", "unit": "labels", "description": "Optional but emotionally necessary for the finished batch.", "cheeky_note": "Make it look like a cult drop.", "essential": false}], "equipment": [{"journey_id": "apartment-white", "sort_order": 1, "name": "Primary fermenter / carboy", "quantity": "1", "description": "Food-safe vessel for primary fermentation. 6–8L headspace preferred for 6L batch.", "cheeky_note": "Where the little rebellion begins.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 2, "name": "Second carboy or demijohn", "quantity": "1", "description": "For racking and secondary fermentation.", "cheeky_note": "The calmer second room.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 3, "name": "Airlock + bung", "quantity": "2", "description": "Lets CO₂ escape while keeping oxygen and bugs out.", "cheeky_note": "The bubble oracle.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 4, "name": "Hydrometer + test tube", "quantity": "1", "description": "Measures sugar so the app can estimate ABV.", "cheeky_note": "Truth stick.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 5, "name": "Thermometer", "quantity": "1", "description": "Tracks fermentation temperature.", "cheeky_note": "Because vibes are not Celsius.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 6, "name": "Auto-siphon or racking cane", "quantity": "1", "description": "Moves wine without dragging sediment around.", "cheeky_note": "Drama-free transfer.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 7, "name": "Sanitiser or Campden sanitising solution", "quantity": "1", "description": "Keeps contamination away from every surface.", "cheeky_note": "Clean gear, good wine.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 8, "name": "Bottles", "quantity": "6", "description": "Clean wine bottles, swing tops or reused screw caps if in good condition.", "cheeky_note": "Your tiny wine army.", "essential": true}, {"journey_id": "apartment-white", "sort_order": 9, "name": "Bottle filler or funnel", "quantity": "1", "description": "Helps bottle without splashing too much oxygen in.", "cheeky_note": "Less mess, fewer regrets.", "essential": false}, {"journey_id": "apartment-white", "sort_order": 10, "name": "Cooling tub or water bath", "quantity": "1", "description": "Helps hold white fermentation cooler in a warm apartment.", "cheeky_note": "Condo climate control.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 1, "name": "Primary fermenter / carboy", "quantity": "1", "description": "Food-safe vessel for primary fermentation. 6–8L headspace preferred for 6L batch.", "cheeky_note": "Where the little rebellion begins.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 2, "name": "Second carboy or demijohn", "quantity": "1", "description": "For racking and secondary fermentation.", "cheeky_note": "The calmer second room.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 3, "name": "Airlock + bung", "quantity": "2", "description": "Lets CO₂ escape while keeping oxygen and bugs out.", "cheeky_note": "The bubble oracle.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 4, "name": "Hydrometer + test tube", "quantity": "1", "description": "Measures sugar so the app can estimate ABV.", "cheeky_note": "Truth stick.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 5, "name": "Thermometer", "quantity": "1", "description": "Tracks fermentation temperature.", "cheeky_note": "Because vibes are not Celsius.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 6, "name": "Auto-siphon or racking cane", "quantity": "1", "description": "Moves wine without dragging sediment around.", "cheeky_note": "Drama-free transfer.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 7, "name": "Sanitiser or Campden solution", "quantity": "1", "description": "Keeps contamination away from every surface.", "cheeky_note": "Clean gear, good wine.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 8, "name": "Wine bottles", "quantity": "6", "description": "Clean dark bottles, swing tops or reused screw caps in good condition.", "cheeky_note": "Your tiny wine army.", "essential": true}, {"journey_id": "beginners-shiraz", "sort_order": 9, "name": "Bottle filler or funnel", "quantity": "1", "description": "Helps bottle without splashing too much oxygen in.", "cheeky_note": "Less mess, fewer regrets.", "essential": false}, {"journey_id": "beginners-shiraz", "sort_order": 10, "name": "Labels or marker pen", "quantity": "1", "description": "For batch name, date and ABV.", "cheeky_note": "Make it look like a cult drop.", "essential": false}, {"journey_id": "cabernet-sauvignon", "sort_order": 1, "name": "Primary fermenter / carboy", "quantity": "1", "description": "Food-safe vessel for primary fermentation. 6–8L headspace preferred for 6L batch.", "cheeky_note": "Where the little rebellion begins.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 2, "name": "Second carboy or demijohn", "quantity": "1", "description": "For racking and secondary fermentation.", "cheeky_note": "The calmer second room.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 3, "name": "Airlock + bung", "quantity": "2", "description": "Lets CO₂ escape while keeping oxygen and bugs out.", "cheeky_note": "The bubble oracle.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 4, "name": "Hydrometer + test tube", "quantity": "1", "description": "Measures sugar so the app can estimate ABV.", "cheeky_note": "Truth stick.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 5, "name": "Thermometer", "quantity": "1", "description": "Tracks fermentation temperature.", "cheeky_note": "Because vibes are not Celsius.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 6, "name": "Auto-siphon or racking cane", "quantity": "1", "description": "Moves wine without dragging sediment around.", "cheeky_note": "Drama-free transfer.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 7, "name": "Sanitiser or Campden sanitising solution", "quantity": "1", "description": "Keeps contamination away from every surface.", "cheeky_note": "Clean gear, good wine.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 8, "name": "Bottles", "quantity": "6", "description": "Clean wine bottles, swing tops or reused screw caps if in good condition.", "cheeky_note": "Your tiny wine army.", "essential": true}, {"journey_id": "cabernet-sauvignon", "sort_order": 9, "name": "Bottle filler or funnel", "quantity": "1", "description": "Helps bottle without splashing too much oxygen in.", "cheeky_note": "Less mess, fewer regrets.", "essential": false}, {"journey_id": "cabernet-sauvignon", "sort_order": 10, "name": "Oak mesh bag", "quantity": "1", "description": "Holds oak chips or cubes cleanly during conditioning.", "cheeky_note": "Tiny barrel cosplay.", "essential": false}, {"journey_id": "lo-fi-rose", "sort_order": 1, "name": "Primary fermenter / carboy", "quantity": "1", "description": "Food-safe vessel for primary fermentation. 6–8L headspace preferred for 6L batch.", "cheeky_note": "Where the little rebellion begins.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 2, "name": "Second carboy or demijohn", "quantity": "1", "description": "For racking and secondary fermentation.", "cheeky_note": "The calmer second room.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 3, "name": "Airlock + bung", "quantity": "2", "description": "Lets CO₂ escape while keeping oxygen and bugs out.", "cheeky_note": "The bubble oracle.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 4, "name": "Hydrometer + test tube", "quantity": "1", "description": "Measures sugar so the app can estimate ABV.", "cheeky_note": "Truth stick.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 5, "name": "Thermometer", "quantity": "1", "description": "Tracks fermentation temperature.", "cheeky_note": "Because vibes are not Celsius.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 6, "name": "Auto-siphon or racking cane", "quantity": "1", "description": "Moves wine without dragging sediment around.", "cheeky_note": "Drama-free transfer.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 7, "name": "Sanitiser or Campden sanitising solution", "quantity": "1", "description": "Keeps contamination away from every surface.", "cheeky_note": "Clean gear, good wine.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 8, "name": "Bottles", "quantity": "6", "description": "Clean wine bottles, swing tops or reused screw caps if in good condition.", "cheeky_note": "Your tiny wine army.", "essential": true}, {"journey_id": "lo-fi-rose", "sort_order": 9, "name": "Bottle filler or funnel", "quantity": "1", "description": "Helps bottle without splashing too much oxygen in.", "cheeky_note": "Less mess, fewer regrets.", "essential": false}, {"journey_id": "lo-fi-rose", "sort_order": 10, "name": "Labels / marker pen", "quantity": "1", "description": "For batch name, date and full cult-wine energy.", "cheeky_note": "Make the bottle wink.", "essential": false}], "issues": [{"issue_id": "no-bubbles-48h", "symptom": "No airlock bubbles after 48 hours", "likely_cause": "Loose seal, cool room or sluggish yeast", "severity": "Medium", "user_action": "Check bung seal, record gravity, warm gently into range and wait another 24 hours.", "related_phase": "Primary", "related_wine_type": "all", "when_to_panic": "If gravity has not changed after 72 hours, rehydrate and pitch fresh yeast.", "coach_copy": "Bubbles are gossip. Gravity is evidence."}, {"issue_id": "low-og", "symptom": "Starting gravity below target", "likely_cause": "Juice has lower sugar than expected", "severity": "Medium", "user_action": "Dissolve measured sugar in a little juice/water, add gradually, stir and recheck OG.", "related_phase": "Prep", "related_wine_type": "all", "when_to_panic": "Do not overshoot target; high sugar can stress yeast.", "coach_copy": "Boost the booze carefully, not chaotically."}, {"issue_id": "too-hot", "symptom": "Fermentation temperature above range", "likely_cause": "Warm room, direct sun or heat from appliances", "severity": "Medium", "user_action": "Move to cooler area, use water bath or wrap with damp towel. Log temperature twice daily.", "related_phase": "Primary", "related_wine_type": "all", "when_to_panic": "If hot plus solvent smell, cool immediately and monitor.", "coach_copy": "Your yeast is sweating. Help them."}, {"issue_id": "rotten-egg", "symptom": "Rotten egg smell", "likely_cause": "Yeast stress or nutrient deficiency", "severity": "High", "user_action": "Add nutrient if appropriate, stir gently to release gas, keep temperature in range.", "related_phase": "Primary", "related_wine_type": "all", "when_to_panic": "If smell persists after fermentation, seek advanced guidance before bottling.", "coach_copy": "Tiny workers are angry."}, {"issue_id": "vinegar-smell", "symptom": "Sharp vinegar smell", "likely_cause": "Oxygen exposure or acetic bacteria", "severity": "High", "user_action": "Stop stirring, check seals, minimise oxygen, taste cautiously and inspect for film.", "related_phase": "Any", "related_wine_type": "all", "when_to_panic": "If strong vinegar plus surface film, batch may be spoiled.", "coach_copy": "This is not the salad dressing journey."}, {"issue_id": "stuck-ferment", "symptom": "Gravity stopped above 1.020", "likely_cause": "Cold room, stressed yeast, high sugar or nutrient issue", "severity": "High", "user_action": "Warm into range, swirl gently, add nutrient if allowed, consider repitching yeast.", "related_phase": "Primary", "related_wine_type": "all", "when_to_panic": "If unchanged for 3 days, repitch with active yeast starter.", "coach_copy": "Fermentation has gone on strike."}, {"issue_id": "cloudy-white", "symptom": "White wine stays cloudy", "likely_cause": "Pectin haze, yeast in suspension or protein haze", "severity": "Low", "user_action": "Wait cool for 7 days, then consider bentonite or pectic enzyme depending on cause.", "related_phase": "Clearing", "related_wine_type": "white_wine", "when_to_panic": "Do not bottle very cloudy wine unless intentionally hazy and stable.", "coach_copy": "Patience before potions."}, {"issue_id": "brown-rose", "symptom": "Rosé turning orange/brown", "likely_cause": "Oxygen exposure or too much heat/light", "severity": "Medium", "user_action": "Reduce headspace, add sulphite per instructions, store cool and dark.", "related_phase": "Secondary", "related_wine_type": "rose", "when_to_panic": "If aroma is flat and oxidised, drink early or blend experimentally.", "coach_copy": "The pink is getting existential."}, {"issue_id": "too-sweet", "symptom": "Wine tastes too sweet", "likely_cause": "Fermentation not finished or backsweetening too high", "severity": "Medium", "user_action": "Check gravity stability. If not stable, keep fermenting under airlock.", "related_phase": "Secondary", "related_wine_type": "all", "when_to_panic": "Never bottle sweet wine unless stabilised.", "coach_copy": "Sweet is fine. Bottle bombs are not."}, {"issue_id": "too-sharp", "symptom": "Wine tastes harsh or sour", "likely_cause": "High acid, young wine or imbalance", "severity": "Low", "user_action": "Let it condition longer; for future batches adjust acid more carefully.", "related_phase": "Conditioning", "related_wine_type": "all", "when_to_panic": "If vinegar-like, use vinegar troubleshooting instead.", "coach_copy": "It may be young, not doomed."}, {"issue_id": "sediment-bottle", "symptom": "Sediment in bottle", "likely_cause": "Bottled before fully clear or disturbed lees", "severity": "Low", "user_action": "Chill upright, pour gently and leave sediment behind.", "related_phase": "Bottle", "related_wine_type": "all", "when_to_panic": "Sediment is usually cosmetic unless pressure or off smells appear.", "coach_copy": "Rustic, not ruined."}, {"issue_id": "mould-film", "symptom": "White fuzzy mould or thick surface film", "likely_cause": "Oxygen exposure or contamination", "severity": "High", "user_action": "Do not stir in. Photograph, inspect smell, and consider discarding if fuzzy mould is present.", "related_phase": "Any", "related_wine_type": "all", "when_to_panic": "When in doubt, do not drink mouldy wine.", "coach_copy": "Funk is fine. Fuzz is not."}]};
+
+const $ = (s) => document.querySelector(s);
+const app = document.getElementById('app');
+
+const state = {
+  screen:'welcome', selected: DATA.journeys[0]?.id || '',
+  batch:null, currentStep:0, log:[], toast:'',
+  kit:{},            // Enhancement 4: kit checklist state
+  celebrating:false, // Enhancement 5: celebration overlay
+  celebText:'',
+  nextAction:'',
+  modal:null,        // Enhancement 3: in-app modal (replaces alert)
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PHASES
-// ═══════════════════════════════════════════════════════════════════════════
-const PHASES=[
-  {id:1,name:"Prep",color:"#5DCAA5",days:"Day 0"},
-  {id:2,name:"Primary fermentation",color:"#EF9F27",days:"Days 1–14"},
-  {id:3,name:"Secondary fermentation",color:"#7F77DD",days:"Days 15–28"},
-  {id:4,name:"Clearing & stabilising",color:"#D85A30",days:"Days 29–42"},
-  {id:5,name:"Conditioning",color:"#378ADD",days:"Days 43–55"},
-  {id:6,name:"Bottling & glory",color:"#c4a96b",days:"Days 56–60+"},
-];
+// Load persisted state
+try {
+  const saved = JSON.parse(localStorage.getItem('glugplonk_state') || '{}');
+  Object.assign(state, saved);
+  if (!state.kit) state.kit = {};
+} catch(e){}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// STEPS — content from database v2 (18 May 2026)
-// logFields drives the inline logger. notif drives notification scheduling.
-// ═══════════════════════════════════════════════════════════════════════════
-const STEPS=[
-  {n:1,ph:1,day:"Day 0",tagline:"No clean, no cult wine.",
-   title:"Sanitise everything",
-   instruction:"Sanitise fermenter, airlock, siphon, spoon, hydrometer tube and funnel. Let drip-dry.",
-   coach:"No clean, no cult wine.",
-   why:"Most beginner failures start on dirty gear.",
-   warning:"No towel drying. Towels carry microbes.",
-   timer:"45 min",logFields:["notes"]},
-
-  {n:2,ph:1,day:"Day 0",tagline:"The truth stick does not flatter.",
-   title:"Take original gravity",
-   instruction:"Fill the test tube, float the hydrometer and read at eye level. Record OG. Target 1.080–1.095.",
-   coach:"The truth stick does not flatter.",
-   why:"OG anchors your ABV calculation at the end.",
-   warning:"Read at eye level — parallax gives a wrong number.",
-   logFields:["sg_reading"]},
-
-  {n:3,ph:1,day:"Day 0",tagline:"Clear the room before yeast arrives.",
-   title:"Add Campden",
-   instruction:"Add one crushed Campden tablet. Cover with cloth and wait 24 hours.",
-   coach:"Clear the room before yeast arrives.",
-   why:"Campden protects the juice before fermentation.",
-   warning:"Wait before pitching yeast.",
-   timer:"24 hours",logFields:["notes"],
-   notif:{title:"The room's been cleared.",body:"Time to invite the real guest. Tap in to add the yeast.",triggerDay:1}},
-
-  {n:4,ph:1,day:"Day 0",tagline:"Clear wine starts early.",
-   title:"Add pectic enzyme",
-   instruction:"Add pectic enzyme with the Campden. Stir gently.",
-   coach:"Clear wine starts early.",
-   why:"Pectic enzyme helps prevent haze.",
-   warning:"Measure it. More is not better."},
-
-  {n:5,ph:2,day:"Day 1",tagline:"The tiny workforce clocks in.",
-   title:"Pitch the yeast",
-   instruction:"Sprinkle yeast, wait 15 minutes, stir gently, fit airlock.",
-   coach:"The tiny workforce clocks in.",
-   why:"Yeast turns sugar into alcohol and CO₂.",
-   warning:"Do not pitch into hot juice.",
-   celebration:"Primary starts now. Your batch is alive.",
-   timer:"15 min surface rest",milestone:true,
-   logFields:["temperature_c","notes"],
-   temp:"Keep within 20–24°C. If warm, use a water bath or move to a cooler room.",
-   tempHot:"Move the batch cooler — high heat can stress yeast and flatten fruit.",
-   notif:{title:"The yeast is in.",body:"The tiny workforce has taken over. Check the airlock tomorrow.",triggerDay:1}},
-
-  {n:6,ph:2,day:"Days 2–3",tagline:"Your batch is alive. Probably.",
-   title:"Check airlock activity",
-   instruction:"Look for bubbles or gravity movement. Keep 20–24°C.",
-   coach:"Your batch is alive. Probably.",
-   why:"Bubbles are useful, but gravity tells the truth.",
-   warning:"No bubbles? Check the bung and take gravity.",
-   timer:"Watch for 48 hrs",
-   logFields:["sg_reading","temperature_c","airlock_activity"],
-   temp:"Keep within 20–24°C.",
-   tempHot:"Wrap carboy in a damp towel. Move to a cooler spot."},
-
-  {n:7,ph:2,day:"Day 3",tagline:"No hangry yeast.",
-   title:"Add yeast nutrient",
-   instruction:"Add 1 level teaspoon of nutrient. Stir gently and refit airlock.",
-   coach:"No hangry yeast.",
-   why:"Nutrient helps yeast finish cleanly.",
-   warning:"Keep everything sanitised.",
-   logFields:["temperature_c","notes"],
-   temp:"Consistent temperature is now more important than the exact number.",
-   tempHot:"Above 26°C? Move the carboy. A damp towel drops temp 2–3°C fast.",
-   notif:{title:"Snack time.",body:"Your yeast needs its packed lunch. One teaspoon of nutrient. Tap in.",triggerDay:3}},
-
-  {n:8,ph:2,day:"Day 7",tagline:"Data today, swagger tomorrow.",
-   title:"Mid-ferment reading",
-   instruction:"Record gravity, temperature and notes. Expect a steady drop from your OG.",
-   coach:"Data today, swagger tomorrow.",
-   why:"Gravity trend shows fermentation progress.",
-   warning:"Use a sanitised sample tool.",
-   logFields:["sg_reading","temperature_c","notes"],
-   temp:"Log temperature alongside SG. Both tell the story.",
-   tempHot:"Room was above 26°C this week? Smell carefully for solvent notes.",
-   notif:{title:"Day 7 check-in.",body:"Grab the hydrometer — the truth awaits.",triggerDay:7}},
-
-  {n:9,ph:2,day:"Day 10",tagline:"Sniff the drama.",
-   title:"Check colour and smell",
-   instruction:"Log colour and aroma. Expect young, fruity and a little rough.",
-   coach:"Sniff the drama.",
-   why:"Smell catches problems early.",
-   warning:"Vinegar or rotten egg needs troubleshooting immediately.",
-   logFields:["colour_check","smell_check","notes"],
-   notif:{title:"Day 10.",body:"Time for a look and a sniff. Open Glug Plonk and report in.",triggerDay:10}},
-
-  {n:10,ph:2,day:"Day 14",tagline:"Almost wine. Behave.",
-   title:"Check primary finish",
-   instruction:"Take gravity. Repeat in 24 hours. Stable and near 1.010 or lower means primary is done.",
-   coach:"Almost wine. Behave.",
-   why:"Stable gravity confirms fermentation has slowed properly.",
-   warning:"If gravity is stuck high, troubleshoot before racking.",
-   celebration:"Primary done. The juice is officially becoming wine.",
-   timer:"Two readings 24 hrs apart",milestone:true,
-   logFields:["sg_reading","notes"],
-   temp:"Cold rooms slow fermentation. Log temperature with your reading.",
-   tempHot:"Room was warm this week? Check for solvent notes.",
-   notif:{title:"Gravity time.",body:"Primary fermentation might be done. Two readings, 24 hrs apart.",triggerDay:14}},
-
-  {n:11,ph:3,day:"Day 15",tagline:"Leave the sludge. Take the wine.",
-   title:"First rack",
-   instruction:"Siphon into a clean carboy, leaving sediment behind.",
-   coach:"Leave the sludge. Take the wine.",
-   why:"Racking reduces off-flavours and clears the wine.",
-   warning:"Avoid splashing.",
-   timer:"30 min",logFields:["clarity_check","notes"],
-   notif:{title:"Rack it.",body:"Time to move your wine to a clean vessel. The siphon awaits.",triggerDay:15}},
-
-  {n:12,ph:3,day:"Day 15",tagline:"No air, no drama.",
-   title:"Top up the carboy",
-   instruction:"Reduce headspace with similar wine or water if needed.",
-   coach:"No air, no drama.",
-   why:"Less oxygen means fresher wine.",
-   warning:"Do not top up with plain water unless desperate.",
-   logFields:["notes"]},
-
-  {n:12.5,ph:3,day:"Day 15",tagline:"Tiny barrel cosplay.",
-   title:"Add oak chips",
-   instruction:"Rinse 12–24g oak with boiling water, cool, then add in a sanitised bag.",
-   coach:"Tiny barrel cosplay.",
-   why:"Oak adds toast, spice and structure.",
-   warning:"Taste weekly. Oak can get loud.",
-   timer:"Taste check every 5–7 days",logFields:["oak_used","notes"],
-   notif:{title:"A royal upgrade.",body:"Drop the oak chips in. The barrel fantasy starts now.",triggerDay:15}},
-
-  {n:13,ph:3,day:"Day 21",tagline:"Quiet does not mean dead.",
-   title:"Check secondary",
-   instruction:"Record gravity and smell. Expect slow movement or calm stability.",
-   coach:"Quiet does not mean dead.",
-   why:"Secondary fermentation is slower and less showy.",
-   warning:"If gravity rises or smells bad, troubleshoot.",
-   logFields:["sg_reading","smell_check","notes"],
-   temp:"SG stuck? Check temperature first — cold is the most common cause.",
-   tempHot:"Room ran warm? Monitor SG closely.",
-   notif:{title:"Day 21 check-in.",body:"A quiet check-in. How's secondary fermentation looking?",triggerDay:21}},
-
-  {n:14,ph:3,day:"Day 28",tagline:"Maths, but make it red.",
-   title:"Confirm final gravity",
-   instruction:"Take two gravity readings 24 hours apart. Target 0.998–1.002.",
-   coach:"Maths, but make it red.",
-   why:"Stable FG lets the app calculate ABV.",
-   warning:"Do not bottle unstable wine.",
-   celebration:"Fermentation done. ABV unlocked.",
-   timer:"Two readings 24 hrs apart",milestone:true,
-   logFields:["sg_reading","calculated_abv","notes"],
-   notif:{title:"Final gravity.",body:"Do the maths. Your ABV is waiting to be born.",triggerDay:28}},
-
-  {n:15,ph:4,day:"Day 29",tagline:"Protect the red stuff.",
-   title:"Stabilise",
-   instruction:"Add Campden as instructed and stir gently.",
-   coach:"Protect the red stuff.",
-   why:"Finished wine needs oxygen protection.",
-   warning:"Do not over-stir.",
-   logFields:["notes"]},
-
-  {n:16,ph:4,day:"Day 30",tagline:"Let gravity do the admin.",
-   title:"Add fining agent",
-   instruction:"Add bentonite or fining agent if the wine is hazy. Follow packet instructions.",
-   coach:"Let gravity do the admin.",
-   why:"Fining helps suspended particles settle.",
-   warning:"Do not move the carboy after fining.",
-   timer:"7–10 days",logFields:["fining_agent_used","notes"],
-   notif:{title:"The jewel-check.",body:"Phone torch at the ready. Is your wine clear yet?",triggerDay:40}},
-
-  {n:16.5,ph:4,day:"Days 22–34",tagline:"Oak is seasoning, not a personality.",
-   title:"Oak taste check",
-   instruction:"Taste a small sample. Rack off oak when spice and toast feel balanced.",
-   coach:"Oak is seasoning, not a personality.",
-   why:"Oak contact time controls intensity.",
-   warning:"If it tastes like vanilla extract, rack now.",
-   logFields:["tasting_notes"]},
-
-  {n:17,ph:4,day:"Day 38",tagline:"Shine a light on it.",
-   title:"Clarity check",
-   instruction:"Hold a sample against light or text. Log clarity.",
-   coach:"Shine a light on it.",
-   why:"Clearer wine bottles better and looks more polished.",
-   warning:"A little haze is not the end.",
-   logFields:["clarity_check","notes"]},
-
-  {n:18,ph:4,day:"Day 40",tagline:"Clean wine, clean room.",
-   title:"Second rack",
-   instruction:"Rack into a clean carboy, leaving fining sediment behind.",
-   coach:"Clean wine, clean room.",
-   why:"This removes the last heavy sediment before conditioning.",
-   warning:"Move slowly — fine sediment resuspends fast.",
-   timer:"30 min",logFields:["clarity_check","notes"]},
-
-  {n:19,ph:5,day:"Days 43–53",tagline:"Cool down, show off later.",
-   title:"Cold condition",
-   instruction:"Move the carboy to 10–14°C and leave it undisturbed for 7–10 days.",
-   coach:"Cool down, show off later.",
-   why:"Cool conditioning helps tartrates and haze drop out.",
-   warning:"Do not freeze the wine.",
-   timer:"7–10 days",logFields:["temperature_c"],
-   temp:"Wine fridge at 12°C is ideal. Singapore aircon room is too warm for this phase.",
-   tempHot:"No wine fridge? Coldest fridge shelf for 5–7 days.",
-   notif:{title:"Cold conditioning.",body:"Move your carboy somewhere cool and leave it alone.",triggerDay:43}},
-
-  {n:20,ph:5,day:"Day 53",tagline:"Is it bold or just loud?",
-   title:"Final taste and adjust",
-   instruction:"Taste. If flat, adjust acid carefully. If thin, consider tannin. Wait before changing more.",
-   coach:"Is it bold or just loud?",
-   why:"Small adjustments can polish the final wine.",
-   warning:"Add little, wait, taste again.",
-   timer:"30 min",logFields:["notes","final_tasting_notes","final_rating"]},
-
-  {n:21,ph:6,day:"Day 56",tagline:"Bottling day needs discipline.",
-   title:"Sanitise bottles",
-   instruction:"Sanitise bottles, corker, siphon and filler. Let drip-dry.",
-   coach:"Bottling day needs discipline.",
-   why:"Bottles are the final contamination risk.",
-   warning:"Reject dirty or damaged bottles.",
-   timer:"1 hour",logFields:["notes"],
-   temp:"Bottle at 20–24°C. Coming from cold conditioning? Let it warm up first.",
-   tempHot:"Above 26°C on bottling day? Move to a cooler room.",
-   notif:{title:"Bottling day.",body:"This is the one you've been waiting for. Get the bottles ready.",triggerDay:56}},
-
-  {n:22,ph:6,day:"Day 56",tagline:"Six bottles. Tiny empire.",
-   title:"Bottle your wine",
-   instruction:"Siphon into bottles, leaving about 2cm headspace. Seal cleanly.",
-   coach:"Six bottles. Tiny empire.",
-   why:"Good filling limits oxygen exposure.",
-   warning:"Work steadily once bottling starts.",
-   timer:"1–2 hours",logFields:["bottles_filled","notes"]},
-
-  {n:23,ph:6,day:"Day 57",tagline:"Label the legend.",
-   title:"Create vintage card",
-   instruction:"Add batch name, ABV, tasting notes and a photo. Label the bottles.",
-   coach:"Label the legend.",
-   why:"A vintage card turns the batch into a story.",
-   warning:"Do not skip the date and ABV.",
-   celebration:"Batch labelled. Cult drop energy achieved.",milestone:true,
-   logFields:["notes"]},
-
-  {n:24,ph:6,day:"Day 60+",tagline:"Patience is rude but useful.",
-   title:"First bottle taste",
-   instruction:"Wait at least 4 weeks if you can. Chill slightly, pour and log the first taste.",
-   coach:"Patience is rude but useful.",
-   why:"Bottle shock fades with time.",
-   warning:"If sharp, give it another month.",
-   celebration:"You made Shiraz. Actual Shiraz. Brag politely.",
-   timer:"4–6 weeks",milestone:true,
-   logFields:["notes","final_rating"],
-   notif:{title:"Eight weeks.",body:"Pour the first glass. You made wine.",triggerDay:90}},
-];
-const TOTAL=STEPS.length;
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOCALSTORAGE HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-const LS={
-  k:k=>'gp_'+k,
-  save(k,v){try{localStorage.setItem(LS.k(k),JSON.stringify(v));}catch(e){}},
-  load(k,def){try{const v=localStorage.getItem(LS.k(k));return v!==null?JSON.parse(v):def;}catch(e){return def;}},
-  del(k){try{localStorage.removeItem(LS.k(k));}catch(e){}},
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// NOTIFICATION SYSTEM
-// ═══════════════════════════════════════════════════════════════════════════
-function getJourneyDay(){
-  const start=S.batchStart;
-  if(!start)return 0;
-  return Math.floor((Date.now()-start)/(1000*60*60*24));
+function save(){
+  localStorage.setItem('glugplonk_state', JSON.stringify({
+    screen:state.screen, selected:state.selected, batch:state.batch,
+    currentStep:state.currentStep, log:state.log, kit:state.kit
+  }));
 }
 
-function scheduleStepNotifs(step){
-  if(!step.notif)return;
-  const existing=LS.load('notifs',[]);
-  const alreadyExists=existing.find(n=>n.triggerDay===step.notif.triggerDay&&n.title===step.notif.title);
-  if(alreadyExists)return;
-  existing.push({...step.notif,shown:false,id:Date.now()});
-  LS.save('notifs',existing);
+function esc(x){ return String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'>',"\"":'"',"'":'&#39;'}[m])); }
+function journey(id=state.selected){ return DATA.journeys.find(j=>j.id===id) || DATA.journeys[0]; }
+function steps(id=state.selected){ return DATA.steps.filter(s=>s.journey_id===id).sort((a,b)=>Number(a.step_number)-Number(b.step_number)); }
+function phases(id=state.selected){ return DATA.phases.filter(p=>p.journey_id===id).sort((a,b)=>Number(a.phase_number)-Number(b.phase_number)); }
+function phaseForStep(st){ return DATA.phases.find(p=>p.id===st?.phase_id) || {name:'Journey',label:'Journey',color_hex:'#641032'}; }
+function ingredients(id=state.selected){ return DATA.ingredients.filter(x=>x.journey_id===id).sort((a,b)=>a.sort_order-b.sort_order); }
+function equipment(id=state.selected){ return DATA.equipment.filter(x=>x.journey_id===id).sort((a,b)=>a.sort_order-b.sort_order); }
+
+function go(screen){ state.screen=screen; save(); render(); }
+function selectJourney(id){ state.selected=id; state.currentStep=0; go('overview'); }
+
+// Enhancement 6: + nav wires to log
+function navPlus(){ go('log'); }
+
+function resetApp(){
+  localStorage.removeItem('glugplonk_state');
+  state.screen='welcome'; state.selected=DATA.journeys[0]?.id||'';
+  state.batch=null; state.currentStep=0; state.log=[]; state.kit={};
+  state.celebrating=false; state.modal=null;
+  render();
 }
 
-function checkDueNotifs(){
-  const day=getJourneyDay();
-  const all=LS.load('notifs',[]);
-  const due=all.filter(n=>!n.shown&&day>=n.triggerDay);
-  return due;
+function toast(msg){ state.toast=msg; render(); setTimeout(()=>{ state.toast=''; render(); },1800); }
+
+// Enhancement 3: In-app modal (replaces alert)
+function showModal(title, body){
+  state.modal = {title, body};
+  render();
+}
+function closeModal(){ state.modal=null; render(); }
+
+// Enhancement 3: Show issue in modal instead of alert
+function showIssue(i){
+  const x = DATA.issues[i];
+  showModal(x.symptom, `
+    <div style="margin-bottom:14px">
+      <div class="kicker" style="margin-bottom:6px">Likely cause</div>
+      <p class="p">${esc(x.likely_cause)}</p>
+    </div>
+    <div class="card" style="margin-bottom:14px;background:var(--paper)">
+      <div class="kicker" style="margin-bottom:6px">Do this</div>
+      <p class="p">${esc(x.user_action)}</p>
+    </div>
+    <div style="margin-bottom:6px">
+      <div class="kicker" style="margin-bottom:6px;color:var(--warn)">When to panic</div>
+      <p class="p" style="color:var(--warn)">${esc(x.when_to_panic || 'Only if it gets worse.')}</p>
+    </div>
+    <div class="card" style="background:var(--wine);border:0;text-align:center;padding:12px;margin-top:14px">
+      <p class="script" style="color:white;font-size:17px;font-weight:900">"${esc(x.coach_copy)}"</p>
+    </div>
+  `);
 }
 
-function markNotifShown(id){
-  const all=LS.load('notifs',[]);
-  const updated=all.map(n=>n.id===id?{...n,shown:true}:n);
-  LS.save('notifs',updated);
+// Enhancement 5: Milestone check
+function isMilestone(step){
+  return step && step.celebration_text && step.celebration_text.trim().length > 0;
 }
 
-function requestNotifPermission(){
-  if(typeof Notification==='undefined')return;
-  if(Notification.permission==='default'){
-    Notification.requestPermission().then(p=>{
-      if(p==='granted')LS.save('notifPerm','granted');
-    });
+// Enhancement 1: Save inline log from task screen
+function saveInlineLog(){
+  const sg = document.getElementById('inline-sg')?.value?.trim();
+  const temp = document.getElementById('inline-temp')?.value?.trim();
+  const notes = document.getElementById('inline-notes')?.value?.trim();
+  if (!sg && !temp && !notes) return;
+  const st = steps(state.selected);
+  const cur = st[Math.min(state.currentStep, st.length-1)];
+  const isFG = cur?.title?.toLowerCase().includes('final gravity') || cur?.title?.toLowerCase().includes('abv');
+  if (isFG && sg && state.batch) {
+    state.batch.fg = parseFloat(sg); // Enhancement 2: store FG for ABV
+  }
+  state.log.push({ sg:sg||null, temp:temp||null, notes:notes||null, step:state.currentStep, stepTitle:cur?.title||'', date:new Date().toLocaleDateString('en-SG') });
+  save();
+}
+
+// Enhancement 5: Complete step with celebration check
+function completeStep(){
+  const st = steps(state.selected);
+  const cur = st[Math.min(state.currentStep, st.length-1)] || {};
+  saveInlineLog();
+  if (state.currentStep >= st.length-1){
+    if (isMilestone(cur)){ state.celebrating=true; state.celebText=cur.celebration_text; state.nextAction='vintage'; render(); }
+    else { go('vintage'); }
+    return;
+  }
+  if (isMilestone(cur)){
+    state.celebrating=true; state.celebText=cur.celebration_text; state.nextAction='next'; render();
+  } else {
+    state.currentStep++; save(); toast('Done. The yeast approves.');
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// APP STATE — loads persisted values from localStorage
-// ═══════════════════════════════════════════════════════════════════════════
-const S={
-  screen:LS.load('screen','splash'),
-  tab:'home',
-  wineryName:LS.load('wineryName',''),
-  skillLevel:LS.load('skillLevel',''),
-  batchName:LS.load('batchName','The First One'),
-  stepIdx:LS.load('stepIdx',0),
-  finished:LS.load('finished',false),
-  batchStart:LS.load('batchStart',null),
-  logs:LS.load('logs',{}),
-  // Transient UI state (not persisted)
-  ob:0,tmpName:'',tmpSkill:'',tmpBatch:'The First One',
-  showWhy:false,showTemp:false,celebration:false,
-  pendingNotif:null,
-  // Temp log inputs
-  _logData:{},
-};
-
-function set(patch){
-  Object.assign(S,patch);
-  // Persist key state
-  if('wineryName'in patch)LS.save('wineryName',S.wineryName);
-  if('skillLevel'in patch)LS.save('skillLevel',S.skillLevel);
-  if('batchName'in patch)LS.save('batchName',S.batchName);
-  if('stepIdx'in patch){LS.save('stepIdx',S.stepIdx);S.showWhy=false;S.showTemp=false;S._logData={};}
-  if('finished'in patch)LS.save('finished',S.finished);
-  if('batchStart'in patch)LS.save('batchStart',S.batchStart);
-  if('screen'in patch)LS.save('screen',S.screen);
-  draw();
+// Enhancement 5: Dismiss celebration overlay
+function dismissCelebration(){
+  state.celebrating=false;
+  if (state.nextAction==='vintage'){ go('vintage'); }
+  else { state.currentStep++; save(); render(); }
 }
 
-function saveLog(stepIdx,data){
-  const existing=S.logs[stepIdx]||{};
-  const merged={...existing,...data,timestamp:Date.now()};
-  S.logs={...S.logs,[stepIdx]:merged};
-  LS.save('logs',S.logs);
-  // ABV auto-calc when FG is recorded
-  if(data.sg_reading){
-    const ogLog=Object.values(S.logs).find(l=>l.og_reading&&l.og_reading>1.05);
-    if(!ogLog){
-      // Check step 2 log (index 1) for OG
-      const step2Log=S.logs[1];
-      if(step2Log&&step2Log.sg_reading&&step2Log.sg_reading>1.05&&data.sg_reading<1.05){
-        const abv=((step2Log.sg_reading-data.sg_reading)*131.25).toFixed(1);
-        const allLogs={...S.logs};
-        allLogs[stepIdx]={...allLogs[stepIdx],calculated_abv:abv};
-        S.logs=allLogs;
-        LS.save('logs',S.logs);
-      }
-    }
-  }
-  draw();
+// Enhancement 4: Toggle kit item
+function toggleKit(itemId){
+  state.kit[itemId] = !state.kit[itemId];
+  save(); render();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DOM HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-function el(tag,attrs,...kids){
-  const n=document.createElement(tag);
-  for(const[k,v]of Object.entries(attrs||{})){
-    if(k==='style'&&typeof v==='object')Object.assign(n.style,v);
-    else if(k==='onClick')n.onclick=v;
-    else if(k==='className')n.className=v;
-    else if(k==='onInput')n.oninput=e=>v(e.target.value);
-    else if(k==='onChange')n.onchange=e=>v(e.target.value);
-    else n.setAttribute(k,v);
-  }
-  for(const c of kids.flat(Infinity)){
-    if(c==null||c===false)continue;
-    n.appendChild(c instanceof Node?c:document.createTextNode(String(c)));
-  }
-  return n;
-}
-const d=(s,...k)=>el('div',{style:s},...k);
-const p=(s,...k)=>el('p',{style:s},...k);
-const b=(s,cb,...k)=>el('button',{style:s,onClick:cb},...k);
-const sp=(s,...k)=>el('span',{style:s},...k);
-
-function inp(style,placeholder,val,cb,type='text'){
-  const i=el('input',{style,placeholder,type,value:val||''});
-  i.oninput=e=>cb(e.target.value);
-  return i;
-}
-function sel(style,opts,val,cb){
-  const s=el('select',{style});
-  opts.forEach(o=>{
-    const opt=el('option',{value:o.v||o});
-    opt.textContent=o.l||o;
-    if((o.v||o)===val)opt.selected=true;
-    s.appendChild(opt);
-  });
-  s.onchange=e=>cb(e.target.value);
-  return s;
-}
-function textarea(style,placeholder,val,cb){
-  const t=el('textarea',{style,placeholder});
-  t.value=val||'';
-  t.oninput=e=>cb(e.target.value);
-  return t;
+// Enhancement 4: Check all essential kit items
+function checkAllKit(){
+  const j = journey();
+  ingredients(j.id).filter(x=>x.essential).forEach(x=>{ state.kit[j.id+'_i'+x.sort_order]=true; });
+  equipment(j.id).filter(x=>x.essential).forEach(x=>{ state.kit[j.id+'_e'+x.sort_order]=true; });
+  save(); render();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// INLINE STEP LOGGER
-// Renders log fields for a given step inline on the step screen
-// ═══════════════════════════════════════════════════════════════════════════
-function renderLogger(stepIdx){
-  const step=STEPS[stepIdx];
-  if(!step.logFields||step.logFields.length===0)return null;
-
-  const saved=S.logs[stepIdx]||{};
-  const tmp=S._logData;
-  const isSaved=Object.keys(saved).length>1; // more than just timestamp
-
-  // Helper to get current value (temp input or saved)
-  const val=(k)=>tmp[k]!==undefined?tmp[k]:(saved[k]||'');
-
-  const inputStyle={
-    background:'#f8f8ff',border:'1.5px solid #d0d0e0',borderRadius:8,
-    padding:'9px 10px',fontSize:14,outline:'none',width:'100%',
-    fontFamily:"'Courier New',monospace"
+function createBatch(){
+  state.batch={
+    name:$('#batchName').value.trim()||'Untitled Plonk',
+    winery:$('#wineryName').value.trim()||'Garage Plonk',
+    date:$('#startDate').value,
+    og:$('#og').value.trim(),
+    journey_id:state.selected
   };
-  const labelStyle={fontSize:10,color:B.dim,fontWeight:600,
-    textTransform:'uppercase',letterSpacing:'.05em',marginBottom:4,display:'block'};
-
-  const rows=[];
-
-  // OG reading (step 2, index 1)
-  if(step.logFields.includes('sg_reading')){
-    const isOG=stepIdx===1;
-    const label=isOG?'OG Reading':'SG Reading';
-    const ph=isOG?'e.g. 1.090':'e.g. 1.050';
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},label),
-      inp({...inputStyle,fontFamily:"'Courier New',monospace"},ph,val('sg_reading'),v=>{
-        tmp.sg_reading=parseFloat(v)||v;
-      },'number')
-    ));
-    // ABV auto-calc hint
-    if(!isOG&&saved.sg_reading){
-      const ogLog=S.logs[1];
-      if(ogLog&&ogLog.sg_reading>1.05){
-        const abv=((ogLog.sg_reading-saved.sg_reading)*131.25).toFixed(1);
-        rows.push(d({background:'#fff0ff',borderRadius:8,padding:'8px 10px',
-          marginBottom:10,display:'flex',justifyContent:'space-between'},
-          sp({fontSize:12,color:B.dim},'Calculated ABV'),
-          sp({fontSize:16,fontWeight:700,color:B.grape,fontFamily:"'Courier New',monospace"},abv+'%')
-        ));
-      }
-    }
-  }
-
-  if(step.logFields.includes('calculated_abv')){
-    const ogLog=S.logs[1];
-    const fgVal=parseFloat(val('sg_reading'))||saved.sg_reading;
-    if(ogLog&&ogLog.sg_reading&&fgVal){
-      const abv=((ogLog.sg_reading-fgVal)*131.25).toFixed(1);
-      rows.push(d({background:'#fff0ff',border:'1.5px solid #f0f',borderRadius:8,
-        padding:'10px 12px',marginBottom:10},
-        d({fontSize:10,color:B.grape,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.06em',marginBottom:4},'ABV Unlocked'),
-        d({display:'flex',justifyContent:'space-between',alignItems:'center'},
-          sp({fontSize:13,color:B.dim},'(OG '+ogLog.sg_reading+' − FG '+fgVal+') × 131.25'),
-          sp({fontSize:22,fontWeight:700,color:B.grape,fontFamily:"'Courier New',monospace"},abv+'%')
-        )
-      ));
-    }
-  }
-
-  if(step.logFields.includes('temperature_c')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Temperature °C'),
-      inp({...inputStyle},val('temperature_c')!==''?String(val('temperature_c')):'','',v=>{tmp.temperature_c=parseFloat(v)||v;},'number')
-    ));
-    // Temp status
-    const t=parseFloat(val('temperature_c'));
-    if(t){
-      const ok=t>=18&&t<=26;
-      const hot=t>26;
-      rows.push(d({background:hot?'#1a0505':ok?'#0a1a0a':'#05051a',
-        borderRadius:8,padding:'7px 10px',marginBottom:10,
-        display:'flex',justifyContent:'space-between',alignItems:'center'},
-        sp({fontSize:12,color:hot?B.warn:ok?B.green:B.cyan},
-          hot?'🔥 Too warm':ok?'✓ Perfect':'❄️ Too cold'),
-        sp({fontSize:12,color:'#aaa'},t+'°C')
-      ));
-    }
-  }
-
-  if(step.logFields.includes('airlock_activity')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Airlock activity'),
-      sel({...inputStyle},
-        ['','Yes — bubbling','Slow but visible','Nothing yet'],
-        val('airlock_activity'),v=>{tmp.airlock_activity=v;draw();})
-    ));
-  }
-
-  if(step.logFields.includes('smell_check')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Smell'),
-      sel({...inputStyle},
-        ['','Fruity & yeasty (good)','Vinegary','Rotten egg','Off — not sure'],
-        val('smell_check'),v=>{tmp.smell_check=v;draw();})
-    ));
-  }
-
-  if(step.logFields.includes('clarity_check')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Clarity'),
-      sel({...inputStyle},
-        ['','Crystal clear','Mostly clear','Still hazy','Very hazy'],
-        val('clarity_check'),v=>{tmp.clarity_check=v;draw();})
-    ));
-  }
-
-  if(step.logFields.includes('colour_check')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Colour'),
-      inp({...inputStyle},'e.g. Deep ruby-purple',val('colour_check'),v=>{tmp.colour_check=v;})
-    ));
-  }
-
-  if(step.logFields.includes('fining_agent_used')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Fining agent used'),
-      inp({...inputStyle},'e.g. Bentonite',val('fining_agent_used'),v=>{tmp.fining_agent_used=v;})
-    ));
-  }
-
-  if(step.logFields.includes('oak_used')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Oak type used'),
-      inp({...inputStyle},'e.g. Medium toast American',val('oak_used'),v=>{tmp.oak_used=v;})
-    ));
-  }
-
-  if(step.logFields.includes('bottles_filled')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Bottles filled'),
-      inp({...inputStyle},'e.g. 6',val('bottles_filled'),v=>{tmp.bottles_filled=v;},'number')
-    ));
-  }
-
-  if(step.logFields.includes('final_rating')){
-    const cur=val('final_rating');
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Rating'),
-      d({display:'flex',gap:8},
-        ...[1,2,3,4,5].map(i=>b({
-          background:cur>=i?B.grape:'#1a1a3a',
-          border:`1px solid ${cur>=i?B.grape:'#333'}`,
-          borderRadius:20,padding:'5px 12px',fontSize:13,color:'#fff',
-          minWidth:36},
-          ()=>{tmp.final_rating=i;draw();},
-          '★'
-        ))
-      )
-    ));
-  }
-
-  if(step.logFields.includes('tasting_notes')||step.logFields.includes('final_tasting_notes')){
-    const key=step.logFields.includes('tasting_notes')?'tasting_notes':'final_tasting_notes';
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Tasting notes'),
-      textarea({...inputStyle,resize:'none',height:60,display:'block'},
-        'What do you taste?',val(key),v=>{tmp[key]=v;})
-    ));
-  }
-
-  if(step.logFields.includes('notes')){
-    rows.push(d({marginBottom:10},
-      el('label',{style:labelStyle},'Notes'),
-      textarea({...inputStyle,resize:'none',height:52,display:'block'},
-        'Anything to note...',val('notes'),v=>{tmp.notes=v;})
-    ));
-  }
-
-  if(rows.length===0)return null;
-
-  const saveBtn=b({
-    width:'100%',
-    background:isSaved?'#0a1a0a':B.blue,
-    color:'#fff',border:'none',borderRadius:14,
-    padding:'10px',fontSize:12,fontWeight:600},
-    ()=>{
-      const dataToSave={...tmp};
-      if(Object.keys(dataToSave).length>0){
-        saveLog(stepIdx,dataToSave);
-        S._logData={};
-      }
-    },
-    isSaved?'✓ Entry saved — tap to update':'Save this entry'
-  );
-
-  return d({background:B.cardBg,borderRadius:12,padding:'14px 16px',marginBottom:12},
-    d({display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12},
-      sp({fontSize:11,color:B.cyan,fontWeight:600,textTransform:'uppercase',
-        letterSpacing:'.08em'},'📊 Log this step'),
-      isSaved?sp({fontSize:10,color:B.green},'✓ saved'):'',
-    ),
-    ...rows,
-    saveBtn
-  );
+  state.currentStep=0; state.log=[]; go('dashboard');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// NOTIFICATION BANNER
-// ═══════════════════════════════════════════════════════════════════════════
-function NotifBanner(notif){
-  return d({
-    position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',
-    width:'100%',maxWidth:430,zIndex:200,animation:'slideDown .35s ease both'},
-    d({background:'#0a1a1a',border:`1px solid ${B.cyan}`,
-      borderTop:'none',borderRadius:'0 0 14px 14px',
-      padding:'12px 16px',display:'flex',alignItems:'flex-start',gap:10},
-      d({flex:1},
-        d({fontSize:10,color:B.cyan,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.06em',marginBottom:3},'📬 '+notif.title),
-        p({fontSize:12,color:'#ccc',lineHeight:1.5},notif.body)
-      ),
-      b({background:'transparent',border:'none',color:B.dim,
-        fontSize:18,cursor:'pointer',padding:'0 4px'},
-        ()=>{markNotifShown(notif.id);S.pendingNotif=null;draw();},'×')
-    )
-  );
+function saveReading(){
+  const sg=$('#sg').value.trim(), temp=$('#temp').value.trim(), notes=$('#notes').value.trim();
+  if (!sg && !temp && !notes){ toast('Add at least one value.'); return; }
+  state.log.push({ sg, temp, notes, step:state.currentStep, stepTitle:'Manual entry', date:new Date().toLocaleDateString('en-SG') });
+  save(); toast('Logged. Legend preserved.');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SCREENS
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── Shell and nav ─────────────────────────────────────────────────────────
+function shell(content, nav=true){
+  const modal = state.modal ? `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="between" style="margin-bottom:16px">
+          <div class="h2" style="font-size:22px;margin:0">${esc(state.modal.title)}</div>
+          <button onclick="closeModal()" style="border:0;background:transparent;font-size:26px;color:var(--muted);line-height:1;padding:0">×</button>
+        </div>
+        ${state.modal.body}
+        <button class="btn" style="width:100%;margin-top:16px" onclick="closeModal()">Got it</button>
+      </div>
+    </div>` : '';
 
-// ── Splash ─────────────────────────────────────────────────────────────────
-function Splash(){
-  // Check if returning user
-  if(S.wineryName&&S.stepIdx>0){
-    setTimeout(()=>set({screen:'main'}),100);
-    return d({background:B.ink,height:'100%',display:'flex',
-      flexDirection:'column',alignItems:'center',justifyContent:'center'},
-      d({fontFamily:'Georgia,serif',fontSize:24,color:B.grape,textAlign:'center'},
-        'Welcome back,'),
-      d({fontFamily:'Georgia,serif',fontSize:28,color:'#fff',textAlign:'center',marginTop:4},
-        S.wineryName),
-      p({fontSize:13,color:B.dim,marginTop:12},'Continuing your journey...')
-    );
-  }
-  return d({background:B.ink,height:'100%',display:'flex',flexDirection:'column',
-    alignItems:'center',justifyContent:'center',padding:'2rem',textAlign:'center'},
-    el('div',{className:'f1',style:{fontSize:11,color:B.dim,letterSpacing:'.2em',
-      textTransform:'uppercase',marginBottom:24}},'Home winery app'),
-    d({marginBottom:16},
-      el('div',{className:'f2',style:{fontFamily:'Georgia,serif',fontSize:58,
-        color:B.cyan,lineHeight:1.05}},'Glug'),
-      el('div',{className:'f3',style:{fontFamily:'Georgia,serif',fontSize:58,
-        color:B.grape,lineHeight:1.05}},'Plonk')
-    ),
-    el('div',{className:'f4',style:{width:36,height:1,background:'#333',margin:'0 auto 18px'}}),
-    el('div',{className:'f4',style:{fontSize:13,color:B.dim,fontStyle:'italic',
-      marginBottom:48,lineHeight:1.6}},'"Make plonk worth glugging."'),
-    el('button',{className:'f5',onClick:()=>set({screen:'onboard'}),
-      style:{background:B.grape,color:B.ink,border:'none',borderRadius:24,
-        padding:'16px 48px',fontSize:15,fontWeight:700,cursor:'pointer',
-        letterSpacing:'.06em'}},'Let me in')
-  );
+  const celeb = state.celebrating ? `
+    <div class="celeb-overlay">
+      <div style="font-size:72px;margin-bottom:20px;animation:celebPulse 1.4s ease infinite">🍷</div>
+      <div class="h1" style="color:white;font-size:40px;margin-bottom:12px">Yes.</div>
+      <p style="font-family:'Comic Sans MS',cursive;color:#fffde8;font-size:18px;line-height:1.6;margin:0 auto 28px;max-width:300px;font-weight:900">"${esc(state.celebText)}"</p>
+      <div class="stamp" style="border-color:white;color:white;margin-bottom:32px">Milestone unlocked</div>
+      <button class="btn lime" style="font-size:16px;padding:16px 40px" onclick="dismissCelebration()">Keep going →</button>
+    </div>` : '';
+
+  app.innerHTML = `
+    <div class="app-shell">
+      <main class="main fade">${content}</main>
+      ${nav ? navHtml() : ''}
+      ${state.toast ? `<div class="toast">${esc(state.toast)}</div>` : ''}
+    </div>
+    ${modal}
+    ${celeb}`;
 }
 
-// ── Onboard ─────────────────────────────────────────────────────────────────
-function Onboard(){
-  const os=S.ob;
-  const skills=[
-    {id:'Grape Newbie',desc:'First time. Slightly terrified. Very excited.'},
-    {id:'Cellar Apprentice',desc:'Done a few things. Ready for more.'},
-    {id:'Vigneron',desc:'Know my lees from my legs.'},
-  ];
-  const is=(s)=>({background:S.tmpSkill===s?'#fff0ff':'#1a1a3a',
-    border:`1.5px solid ${S.tmpSkill===s?B.grape:'#333'}`,
-    borderRadius:14,padding:'14px 16px',textAlign:'left',width:'100%',marginBottom:8});
+function topbar(title, sub=''){ return `<div class="between" style="margin-bottom:18px"><div><div class="kicker">${esc(sub||'Private Batch')}</div><div class="h2">${esc(title)}</div></div><div class="icon">GP</div></div>`; }
 
-  return d({background:B.ink,height:'100%',padding:'48px 24px 32px',
-    display:'flex',flexDirection:'column',overflowY:'auto'},
-    d({display:'flex',gap:8,justifyContent:'center',marginBottom:40},
-      ...[0,1,2].map(i=>d({width:8,height:8,borderRadius:'50%',
-        background:i===os?B.grape:'#2a2a4a'}))
-    ),
-    // Step 0: name
-    ...(os===0?[
-      d({fontFamily:'Georgia,serif',fontSize:26,color:'#fff',marginBottom:8},'Name your winery.'),
-      p({fontSize:13,color:B.dim,lineHeight:1.6,marginBottom:24},
-        'Every great winery started with a name on a napkin.'),
-      inp({background:'#1a1a3a',border:`1.5px solid ${B.grape}`,borderRadius:12,
-        padding:'14px 16px',fontSize:15,color:'#fff',outline:'none',
-        marginBottom:12,fontFamily:'Georgia,serif'},
-        'e.g. Garage Noir Wines',S.tmpName,v=>set({tmpName:v})),
-      inp({background:'#1a1a3a',border:'1.5px solid #333',borderRadius:12,
-        padding:'14px 16px',fontSize:14,color:'#fff',outline:'none',marginBottom:32},
-        'Name your first batch',S.tmpBatch,v=>set({tmpBatch:v})),
-      d({flex:1}),
-      b({background:S.tmpName?B.grape:'#333',color:S.tmpName?B.ink:B.dim,
-        border:'none',borderRadius:24,padding:'16px',fontSize:15,fontWeight:700,width:'100%'},
-        ()=>S.tmpName&&set({ob:1}),'Next →')
-    ]:[]),
-    // Step 1: skill
-    ...(os===1?[
-      d({fontFamily:'Georgia,serif',fontSize:26,color:'#fff',marginBottom:8},'Who are you in the cellar?'),
-      p({fontSize:13,color:B.dim,marginBottom:24},'Be honest. This sets the language for your whole journey.'),
-      ...skills.map(s=>b(is(s.id),()=>set({tmpSkill:s.id}),
-        d({fontSize:14,fontWeight:600,color:S.tmpSkill===s.id?B.grape:'#fff'},s.id),
-        d({fontSize:12,color:B.dim,marginTop:3},s.desc)
-      )),
-      d({flex:1}),
-      b({background:S.tmpSkill?B.grape:'#333',color:S.tmpSkill?B.ink:B.dim,
-        border:'none',borderRadius:24,padding:'16px',fontSize:15,fontWeight:700,width:'100%'},
-        ()=>S.tmpSkill&&set({ob:2}),'Next →')
-    ]:[]),
-    // Step 2: confirm
-    ...(os===2?[
-      d({fontFamily:'Georgia,serif',fontSize:26,color:'#fff',marginBottom:8},`Ready, ${S.tmpName}.`),
-      p({fontSize:13,color:B.dim,lineHeight:1.6,marginBottom:24},
-        `Batch #001 "${S.tmpBatch}" — 26 steps, 60 days, something worth drinking.`),
-      d({background:'#1a1a3a',borderRadius:14,padding:16,marginBottom:32},
-        d({fontSize:10,color:B.cyan,textTransform:'uppercase',letterSpacing:'.08em',marginBottom:8},'Your first journey'),
-        d({fontFamily:'Georgia,serif',fontSize:18,color:'#fff',marginBottom:4},"Beginner's Shiraz"),
-        d({fontSize:12,color:B.dim},`Red · Full-bodied · 60 days · ${TOTAL} steps`)
-      ),
-      d({flex:1}),
-      b({background:B.grape,color:B.ink,border:'none',borderRadius:24,
-        padding:'16px',fontSize:15,fontWeight:700,width:'100%',letterSpacing:'.04em'},
-        ()=>{
-          const batchStart=Date.now();
-          set({screen:'main',tab:'home',wineryName:S.tmpName,
-            skillLevel:S.tmpSkill,batchName:S.tmpBatch,batchStart});
-          requestNotifPermission();
-        },'Open the cellar →')
-    ]:[])
-  );
-}
-
-// ── Home ─────────────────────────────────────────────────────────────────
-function Home(){
-  const step=STEPS[S.stepIdx];
-  const phase=PHASES[step.ph-1];
-  const pct=(S.stepIdx/TOTAL)*100;
-  const journeyDay=getJourneyDay();
-  const log=S.logs[S.stepIdx]||{};
-
-  return d({background:B.lightBg,flex:1,overflowY:'auto',padding:'16px 16px 20px'},
-    d({padding:'0 4px',marginBottom:16},
-      d({fontSize:11,color:B.dim,marginBottom:2},S.wineryName||'My Winery'),
-      d({fontFamily:'Georgia,serif',fontSize:24,color:B.ink},'The Cellar Door')
-    ),
-    // Batch card
-    d({background:B.ink,borderRadius:20,overflow:'hidden',marginBottom:12},
-      d({padding:'18px 20px'},
-        d({display:'flex',alignItems:'center',gap:6,marginBottom:8},
-          d({width:7,height:7,borderRadius:'50%',background:phase.color,flexShrink:0}),
-          d({fontSize:10,color:B.dim,textTransform:'uppercase',letterSpacing:'.08em'},
-            `Batch #001 · ${phase.name}`)
-        ),
-        d({fontFamily:'Georgia,serif',fontSize:22,color:B.grape,marginBottom:4},
-          S.batchName||'The First One'),
-        d({fontSize:12,color:B.dim,marginBottom:14},`Beginner's Shiraz · ${step.day}`),
-        d({height:4,background:'#1a1a3a',borderRadius:2,marginBottom:6},
-          d({height:4,background:B.grape,width:`${pct}%`,borderRadius:2})
-        ),
-        d({display:'flex',justifyContent:'space-between',fontSize:10,color:B.dim,marginBottom:18},
-          sp({},'Step '+(S.stepIdx+1)+' of '+TOTAL),
-          sp({},Math.round(pct)+'%')
-        ),
-        b({width:'100%',background:B.grape,color:B.ink,border:'none',
-          borderRadius:18,padding:'13px',fontSize:14,fontWeight:700,letterSpacing:'.04em'},
-          ()=>set({tab:'step'}),'Continue journey')
-      ),
-      d({background:'#f0f0ff',padding:'14px 20px'},
-        d({fontSize:10,color:B.blue,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.06em',marginBottom:5},'Glug Plonk Coach'),
-        p({fontSize:12,color:'#333',fontStyle:'italic',lineHeight:1.6,margin:0},
-          `"${step.coach}"`)
-      )
-    ),
-    // Next up
-    d({background:'#fff',border:'1.5px solid #e0e0f0',borderRadius:14,
-      padding:'14px 16px',marginBottom:12},
-      d({fontSize:10,color:B.dim,marginBottom:4},'Next up'),
-      d({fontSize:14,fontWeight:500,color:B.ink},step.title),
-      d({fontSize:11,color:B.dim,marginTop:3,fontStyle:'italic'},step.tagline)
-    ),
-    // Stats row
-    d({display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8},
-      d({background:'#fff',borderRadius:12,padding:'12px',border:'1.5px solid #e0e0f0',textAlign:'center'},
-        d({fontSize:20,fontWeight:700,color:B.ink,fontFamily:'Georgia,serif'},TOTAL-S.stepIdx-1),
-        d({fontSize:10,color:B.dim},'steps left')
-      ),
-      d({background:'#fff',borderRadius:12,padding:'12px',border:'1.5px solid #e0e0f0',textAlign:'center'},
-        d({fontSize:12,fontWeight:700,color:B.grape,fontFamily:'monospace'},step.day),
-        d({fontSize:10,color:B.dim},'current day')
-      ),
-      d({background:'#fff',borderRadius:12,padding:'12px',border:'1.5px solid #e0e0f0',textAlign:'center'},
-        d({fontSize:20,fontWeight:700,color:B.green,fontFamily:'Georgia,serif'},
-          Object.keys(S.logs).length),
-        d({fontSize:10,color:B.dim},'entries')
-      )
-    ),
-    // Journey day indicator
-    journeyDay>0?d({background:'#fff',border:'1.5px solid #e0e0f0',borderRadius:12,
-      padding:'10px 14px',marginTop:8,display:'flex',justifyContent:'space-between',
-      alignItems:'center'},
-      sp({fontSize:12,color:B.dim},'Journey day'),
-      sp({fontSize:14,fontWeight:600,color:B.ink,fontFamily:'monospace'},'Day '+journeyDay)
-    ):null
-  );
-}
-
-// ── Step Screen ─────────────────────────────────────────────────────────────
-function Step(){
-  const step=STEPS[S.stepIdx];
-  const phase=PHASES[step.ph-1];
-  const pct=(S.stepIdx/TOTAL)*100;
-
-  const nextStep=()=>{
-    const nx=S.stepIdx+1;
-    if(nx>=TOTAL){set({finished:true,celebration:false,tab:'home'});}
-    else{
-      // Schedule this step's notification
-      scheduleStepNotifs(step);
-      set({stepIdx:nx,celebration:false,tab:'home'});
-    }
-  };
-  const done=()=>{
-    // Auto-save any temp log data
-    if(Object.keys(S._logData).length>0){
-      saveLog(S.stepIdx,{...S._logData});
-      S._logData={};
-    }
-    if(step.milestone&&step.celebration)set({celebration:true});
-    else nextStep();
-  };
-
-  // Celebration overlay
-  const celeb=S.celebration?d({
-    position:'fixed',inset:0,background:'rgba(13,13,26,.97)',zIndex:100,
-    display:'flex',flexDirection:'column',alignItems:'center',
-    justifyContent:'center',padding:'2rem',textAlign:'center',
-    animation:'celebIn .35s ease both'},
-    d({fontSize:'3.5rem',marginBottom:'1rem',display:'inline-block',
-      animation:'pulse 1.4s infinite'},'🍷'),
-    d({fontFamily:'Georgia,serif',fontSize:22,color:B.grape,
-      marginBottom:12,lineHeight:1.3},step.title),
-    p({fontSize:14,color:'#fff',fontStyle:'italic',lineHeight:1.7,
-      marginBottom:32,maxWidth:300},`"${step.celebration}"`),
-    b({background:B.grape,color:B.ink,border:'none',borderRadius:24,
-      padding:'14px 40px',fontSize:15,fontWeight:700},nextStep,'Continue →')
-  ):null;
-
-  return d({background:B.ink,flex:1,display:'flex',flexDirection:'column',overflowY:'auto'},
-    celeb,
-    // Status bar
-    d({display:'flex',justifyContent:'space-between',padding:'12px 18px 0',
-      color:B.dim,fontSize:11},
-      sp({fontFamily:'monospace'},'9:41'),
-      sp({color:B.cyan,fontFamily:'monospace',fontSize:10},
-        'Step '+(S.stepIdx+1)+' of '+TOTAL)
-    ),
-    // Progress bar
-    d({height:3,background:'#1a1a3a',margin:'8px 0 0'},
-      d({height:3,background:B.grape,width:`${pct}%`,
-        borderRadius:'0 2px 2px 0',transition:'width .4s'})
-    ),
-    // Scrollable content
-    d({flex:1,overflowY:'auto',padding:'16px 18px 100px'},
-      // Phase badge
-      d({display:'flex',alignItems:'center',gap:8,marginBottom:12},
-        d({width:8,height:8,borderRadius:'50%',background:phase.color,flexShrink:0}),
-        sp({fontSize:10,fontWeight:600,color:phase.color,textTransform:'uppercase',
-          letterSpacing:'.08em'},`${phase.name} · ${step.day}`)
-      ),
-      p({fontSize:12,color:B.cyan,fontStyle:'italic',marginBottom:8},step.tagline),
-      el('h1',{style:{fontFamily:'Georgia,serif',fontSize:26,color:'#fff',
-        lineHeight:1.2,marginBottom:16,fontWeight:400}},step.title),
-      p({fontSize:14,color:B.grey,lineHeight:1.75,marginBottom:16},step.instruction),
-      // Chips
-      d({display:'flex',gap:8,flexWrap:'wrap',marginBottom:16},
-        ...(step.timer?[sp({background:'#1a1a3a',color:B.grape,borderRadius:20,
-          padding:'5px 12px',fontSize:11,fontWeight:500,fontFamily:'monospace'},
-          '⏱ '+step.timer)]:[]),
-        ...(step.temp?[b({background:S.showTemp?'#f90':'#1a1a3a',
-          color:S.showTemp?B.ink:'#f90',border:'none',borderRadius:20,
-          padding:'5px 12px',fontSize:11,fontWeight:500,fontFamily:'monospace'},
-          ()=>set({showTemp:!S.showTemp}),
-          '🌡 Temp '+(S.showTemp?'▲':'▼'))]:[])
-      ),
-      // Temp panel
-      ...(S.showTemp&&step.temp?[d({background:'#1a0f00',border:'1px solid #f90',
-        borderRadius:10,padding:'12px 14px',marginBottom:16},
-        d({fontSize:10,color:'#f90',fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.06em',marginBottom:6},'Temperature check'),
-        p({fontSize:12,color:'#ffd080',lineHeight:1.6,margin:0},step.temp),
-        ...(step.tempHot?[p({fontSize:12,color:'#ff8080',lineHeight:1.6,
-          margin:'8px 0 0',borderTop:'1px solid #3a2000',paddingTop:8},'🔥 '+step.tempHot)]:[] )
-      )]:[] ),
-      // Warning
-      ...(step.warning?[d({background:'#180008',border:'1px solid #ff2d55',
-        borderRadius:10,padding:'12px 14px',marginBottom:16},
-        d({fontSize:10,color:B.warn,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.06em',marginBottom:4},'⚠ Watch out'),
-        p({fontSize:12,color:'#ffb0b8',lineHeight:1.6,margin:0},step.warning)
-      )]:[] ),
-      // Coach
-      d({background:B.cardBg,borderRadius:12,padding:'14px 16px',marginBottom:12},
-        d({fontSize:10,color:B.grape,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.08em',marginBottom:6},'Glug Plonk Coach'),
-        p({fontSize:13,color:'#e0e0e0',fontStyle:'italic',lineHeight:1.65,margin:0},
-          `"${step.coach}"`)
-      ),
-      // Science
-      ...(step.why?[
-        b({background:'transparent',border:'1px solid #2a2a4a',borderRadius:20,
-          padding:'6px 14px',fontSize:11,color:B.dim,marginBottom:8},
-          ()=>set({showWhy:!S.showWhy}),
-          '⚗ The science bit '+(S.showWhy?'▲':'▼')),
-        ...(S.showWhy?[d({background:B.parchment,borderRadius:10,
-          padding:'12px 14px',marginBottom:12},
-          d({fontSize:10,color:'#b06020',fontWeight:600,textTransform:'uppercase',
-            letterSpacing:'.06em',marginBottom:6},'The science bit'),
-          p({fontSize:12,color:'#4a3010',lineHeight:1.65,margin:0},step.why)
-        )]:[] )
-      ]:[]),
-      // ── INLINE LOGGER ──
-      renderLogger(S.stepIdx)
-    ),
-    // Fixed Done button
-    d({position:'sticky',bottom:0,padding:'12px 18px 20px',
-      background:'linear-gradient(to top,#0d0d1a 60%,transparent)'},
-      b({width:'100%',background:B.grape,color:B.ink,border:'none',
-        borderRadius:24,padding:'16px',fontSize:'15px',fontWeight:700,
-        letterSpacing:'.04em',boxShadow:'0 0 28px #ff00ff44'},
-        done,'Done — next step ↗')
-    )
-  );
-}
-
-// ── Brew Log (timeline of all logged data) ─────────────────────────────────
-function Log(){
-  const entries=Object.entries(S.logs)
-    .map(([idx,data])=>({idx:parseInt(idx),step:STEPS[parseInt(idx)],data}))
-    .filter(e=>e.step)
-    .sort((a,b)=>a.idx-b.idx);
-
-  // OG/FG for ABV summary
-  const ogLog=S.logs[1];
-  const fgIdx=entries.findIndex(e=>e.step.logFields&&e.step.logFields.includes('calculated_abv'));
-  const fgLog=fgIdx>=0?entries[fgIdx].data:null;
-
-  return d({background:B.lightBg,flex:1,overflowY:'auto',padding:'16px 16px 20px'},
-    d({fontFamily:'Georgia,serif',fontSize:24,color:B.ink,marginBottom:4,padding:'0 4px'},'Brew Log'),
-    d({fontSize:12,color:B.dim,marginBottom:16,padding:'0 4px'},"Beginner's Shiraz · Batch #001"),
-
-    // ABV summary card (if both OG and FG available)
-    ...(ogLog&&ogLog.sg_reading&&fgLog&&fgLog.sg_reading?[
-      d({background:B.ink,borderRadius:14,padding:'14px 16px',marginBottom:16},
-        d({fontSize:10,color:B.grape,fontWeight:600,textTransform:'uppercase',
-          letterSpacing:'.08em',marginBottom:8},'ABV Summary'),
-        d({display:'flex',justifyContent:'space-around',textAlign:'center'},
-          d({},d({fontSize:10,color:B.dim,marginBottom:4},'OG'),
-            d({fontSize:20,fontFamily:'monospace',fontWeight:700,color:'#fff'},
-              ogLog.sg_reading.toFixed(3))),
-          d({alignSelf:'center',fontSize:20,color:B.dim},'→'),
-          d({},d({fontSize:10,color:B.dim,marginBottom:4},'FG'),
-            d({fontSize:20,fontFamily:'monospace',fontWeight:700,color:'#fff'},
-              fgLog.sg_reading.toFixed(3))),
-          d({alignSelf:'center',fontSize:20,color:B.dim},'='),
-          d({},d({fontSize:10,color:B.grape,marginBottom:4,fontWeight:600},'ABV'),
-            d({fontSize:24,fontFamily:'monospace',fontWeight:700,color:B.grape},
-              ((ogLog.sg_reading-fgLog.sg_reading)*131.25).toFixed(1)+'%'))
-        )
-      )
-    ]:[]),
-
-    // Entry list
-    entries.length>0?d({display:'flex',flexDirection:'column',gap:8},
-      ...entries.map(e=>{
-        const phase=PHASES[e.step.ph-1];
-        const d2=e.data;
-        const fields=Object.entries(d2)
-          .filter(([k])=>k!=='timestamp')
-          .map(([k,v])=>`${k.replace(/_/g,' ')}: ${v}`)
-          .join(' · ');
-        return d({background:'#fff',border:'1.5px solid #e0e0f0',
-          borderRadius:12,padding:'12px 14px'},
-          d({display:'flex',justifyContent:'space-between',alignItems:'flex-start',
-            marginBottom:6},
-            d({},
-              d({display:'flex',alignItems:'center',gap:5,marginBottom:3},
-                d({width:6,height:6,borderRadius:'50%',
-                  background:phase.color,flexShrink:0}),
-                sp({fontSize:10,fontWeight:600,color:phase.color,
-                  textTransform:'uppercase',letterSpacing:'.04em'},phase.name)
-              ),
-              d({fontSize:13,fontWeight:500,color:B.ink},
-                'Step '+(e.idx+1)+': '+e.step.title)
-            ),
-            sp({fontSize:10,color:B.dim,flexShrink:0,marginLeft:8},
-              d2.timestamp?new Date(d2.timestamp).toLocaleDateString('en-SG'):'')
-          ),
-          p({fontSize:11,color:B.dim,lineHeight:1.6},fields)
-        );
-      })
-    ):d({textAlign:'center',padding:'40px 20px'},
-      d({fontSize:32,marginBottom:12},'📊'),
-      d({fontSize:14,color:B.dim},'Log your readings during the journey.')
-    )
-  );
-}
-
-// ── The Cellar ─────────────────────────────────────────────────────────────
-function Cellar(){
-  const posts=[
-    {winery:'Garage Noir Wines',region:'Singapore',batch:'The First One',wine:"Lo-fi Shiraz",abv:12.8,kudos:7},
-    {winery:'Rooftop Reds',region:'Melbourne, AU',batch:'Sunday Sessions',wine:'Apartment White',abv:11.4,kudos:14},
-    {winery:'Kitchen Bench Co',region:'London, UK',batch:'For Mum',wine:"Lo-fi Rosé",abv:11.9,kudos:22},
-  ];
-  let counts=[...posts.map(p=>p.kudos)];
-  return d({background:B.lightBg,flex:1,overflowY:'auto',padding:'16px 16px 20px'},
-    d({fontFamily:'Georgia,serif',fontSize:24,color:B.ink,marginBottom:4,padding:'0 4px'},'The Cellar'),
-    d({fontSize:12,color:B.dim,marginBottom:20,padding:'0 4px'},'Home winemakers, worldwide.'),
-    d({display:'flex',flexDirection:'column',gap:10},
-      ...posts.map((post,i)=>{
-        const kb=b({background:'transparent',border:'1px solid #e0e0f0',
-          borderRadius:20,padding:'5px 14px',fontSize:11,color:B.dim},
-          ()=>{counts[i]++;kb.textContent='🍷 '+counts[i]+' kudos';},
-          '🍷 '+counts[i]+' kudos');
-        return d({background:'#fff',border:'1.5px solid #e0e0f0',borderRadius:16,padding:16},
-          d({display:'flex',justifyContent:'space-between',marginBottom:8},
-            d({},d({fontSize:13,fontWeight:600,color:B.ink},post.winery),
-              d({fontSize:11,color:B.dim},post.region))
-          ),
-          d({fontFamily:'Georgia,serif',fontSize:17,color:B.grape,marginBottom:3},post.batch),
-          d({fontSize:12,color:B.dim,marginBottom:12},post.wine+' · '+post.abv+'% ABV'),
-          kb
-        );
-      })
-    )
-  );
-}
-
-// ── Vintage Card ─────────────────────────────────────────────────────────
-function Vintage(){
-  const ogLog=S.logs[1];
-  const fgLog=Object.values(S.logs).find(l=>l.sg_reading&&l.sg_reading<1.05);
-  const abv=(ogLog&&fgLog)?((ogLog.sg_reading-fgLog.sg_reading)*131.25).toFixed(1):null;
-
-  return d({background:B.ink,height:'100%',display:'flex',flexDirection:'column',
-    alignItems:'center',justifyContent:'center',padding:'2rem 1.5rem',
-    textAlign:'center',overflowY:'auto'},
-    d({fontSize:12,color:B.dim,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:24},'Journey complete'),
-    d({border:`2px solid ${B.grape}`,borderRadius:20,padding:'28px 24px',
-      maxWidth:320,width:'100%',marginBottom:32,background:'#ffffff08'},
-      d({fontSize:10,color:B.dim,letterSpacing:'.12em',textTransform:'uppercase',marginBottom:12},
-        `${S.wineryName||'My Winery'} · Batch #001`),
-      d({fontFamily:'Georgia,serif',fontSize:28,color:'#fff',marginBottom:6,lineHeight:1.2},
-        S.batchName||'The First One'),
-      d({fontSize:11,color:B.dim,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20},
-        `${new Date().getFullYear()} · Beginner's Shiraz`),
-      d({height:1,background:'#333',marginBottom:20}),
-      p({fontSize:12,color:B.grey,fontStyle:'italic',lineHeight:1.6,marginBottom:20},
-        '"Dark fruit, pepper, and the unmistakable taste of something you made yourself."'),
-      d({display:'flex',justifyContent:'center',gap:16,fontSize:11,color:B.dim,marginBottom:16},
-        sp({},abv?abv+'% ABV':'~12% ABV'),sp({},'·'),sp({},'6 bottles')),
-      d({fontSize:12,color:B.grape,letterSpacing:'.08em',textTransform:'uppercase',
-        fontWeight:600,marginBottom:4},'Certified gluggable'),
-      d({fontSize:10,color:B.dim},'Made with Glug Plonk')
-    ),
-    b({background:B.grape,color:B.ink,border:'none',borderRadius:24,
-      padding:'14px 36px',fontSize:14,fontWeight:700,letterSpacing:'.04em'},
-      ()=>set({finished:false,stepIdx:0,tab:'home',logs:{},showWhy:false,showTemp:false}),
-      'Start Batch #002 ↗')
-  );
-}
-
-// ── Bottom Nav ─────────────────────────────────────────────────────────────
-function BottomNav(){
-  const logCount=Object.keys(S.logs).length;
+function navHtml(){
   const tabs=[
-    {id:'home',icon:'🏠',label:'Home'},
-    {id:'step',icon:'🍷',label:'Journey'},
-    {id:'log',icon:'📊',label:'Brew Log',badge:logCount||null},
-    {id:'cellar',icon:'👥',label:'The Cellar'},
+    ['dashboard','🍷','Batch'],
+    ['journeys','🧭','Journey'],
+    ['log','+',''],       // Enhancement 6: + wired to log
+    ['log','📈','Log'],
+    ['help','⚡','Help']
   ];
-  return d({display:'flex',background:'rgba(255,255,255,.96)',
-    backdropFilter:'blur(12px)',borderTop:'1px solid #e0e0f0'},
-    ...tabs.map(t=>b({flex:1,background:'transparent',border:'none',
-      padding:'10px 0 18px',position:'relative',
-      borderTop:S.tab===t.id?`2px solid ${B.grape}`:'2px solid transparent'},
-      ()=>set({tab:t.id}),
-      d({fontSize:20,marginBottom:2},t.icon),
-      ...(t.badge?[d({position:'absolute',top:6,right:'calc(50% - 16px)',
-        background:B.grape,borderRadius:10,padding:'1px 5px',
-        fontSize:9,color:B.ink,fontWeight:700},String(t.badge))]:[] ),
-      d({fontSize:10,color:S.tab===t.id?B.grape:B.dim,
-        fontWeight:S.tab===t.id?600:400},t.label)
-    ))
-  );
+  return `<nav class="nav">${tabs.map(([id,ic,lab])=>`<button onclick="go('${id}')" class="${state.screen===id?'active':''} ${!lab?'plus':''}">${ic}${lab?`<span>${lab}</span>`:''}</button>`).join('')}</nav>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MAIN RENDER
-// ═══════════════════════════════════════════════════════════════════════════
-function draw(){
-  const app=document.getElementById('app');
-  while(app.firstChild)app.removeChild(app.firstChild);
+// ─── Screens ────────────────────────────────────────────────────────────────
 
-  // Check for due notifications
-  const due=checkDueNotifs();
-  if(due.length>0&&!S.pendingNotif){
-    S.pendingNotif=due[0];
-  }
-
-  if(S.screen==='splash'){app.appendChild(Splash());return;}
-  if(S.screen==='onboard'){app.appendChild(Onboard());return;}
-  if(S.finished){
-    const w=d({height:'100%',overflowY:'auto'});
-    w.appendChild(Vintage());app.appendChild(w);return;
-  }
-
-  const wrap=d({display:'flex',flexDirection:'column',height:'100%'});
-
-  // Notification banner (shown in main app only)
-  if(S.pendingNotif){
-    wrap.appendChild(NotifBanner(S.pendingNotif));
-  }
-
-  const content=
-    S.tab==='home'?Home():
-    S.tab==='step'?Step():
-    S.tab==='log'?Log():Cellar();
-  wrap.appendChild(content);
-  wrap.appendChild(BottomNav());
-  app.appendChild(wrap);
+function render(){
+  if(state.screen==='welcome') return welcome();
+  if(state.screen==='journeys') return journeys();
+  if(state.screen==='overview') return overview();
+  if(state.screen==='start') return start();
+  if(state.screen==='dashboard') return dashboard();
+  if(state.screen==='task') return task();
+  if(state.screen==='kit') return kit();
+  if(state.screen==='log') return logScreen();
+  if(state.screen==='help') return help();
+  if(state.screen==='vintage') return vintage();
+  return dashboard();
 }
 
-draw();
+function welcome(){
+  shell(`<div style="min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 6px 36px">
+    <div class="brand" style="font-size:70px;color:var(--ink);margin-bottom:12px">Glug<br>Plonk</div>
+    <div class="script" style="font-size:22px;color:var(--wine);font-weight:900;line-height:1.2;margin-bottom:18px">Make weirdly good<br>wine at home</div>
+    <div style="font-size:48px;margin:10px 0 18px">🍷</div>
+    <div class="stamp" style="margin:0 auto 28px">No snobbery. Just fermentation.</div>
+    <button class="btn" onclick="go('journeys')">Start a batch</button>
+    <button class="btn alt" style="margin-top:12px" onclick="go('dashboard')">I already ferment</button>
+  </div>`, false);
+}
+
+function journeys(){
+  shell(`${topbar('What are we making today?','Choose your wine journey')}
+    <div style="display:grid;gap:12px">${DATA.journeys.map(j=>`<button class="journey-card" style="background:${j.colour};color:${j.id==='apartment-white'?'#1d1a12':'white'}" onclick="selectJourney('${j.id}')">
+      <div class="kicker" style="color:currentColor;opacity:.75">${esc(j.difficulty)} · ${esc(j.duration_days)} days</div>
+      <div class="h2" style="font-size:24px;margin:7px 0 8px;color:currentColor">${esc(j.name)}</div>
+      <div style="font-size:13px;line-height:1.35;max-width:82%">${esc(j.tagline)}</div>
+    </button>`).join('')}</div>
+    <button class="btn alt" style="width:100%;margin-top:14px" onclick="selectJourney(DATA.journeys[Math.floor(Math.random()*DATA.journeys.length)].id)">Not sure? Surprise me 🎲</button>`);
+}
+
+function overview(){
+  const j=journey(); const ph=phases();
+  shell(`${topbar(j.name,'Journey overview')}
+    <div class="card" style="background:${j.colour};color:${j.id==='apartment-white'?'#1d1a12':'white'};border:0;margin-bottom:14px">
+      <div class="kicker" style="color:currentColor;opacity:.75">${esc(j.style)}</div>
+      <div class="h1" style="color:currentColor">${esc(j.name)}</div>
+      <p style="font-size:14px;line-height:1.55;margin:0;color:currentColor;opacity:.9">${esc(j.description||j.tagline)}</p>
+    </div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card"><div class="kicker">Difficulty</div><b>${esc(j.difficulty)}</b></div>
+      <div class="card"><div class="kicker">Duration</div><b>${esc(j.duration_days)} days</b></div>
+      <div class="card"><div class="kicker">Expected ABV</div><b>${esc(j.target_abv)}</b></div>
+      <div class="card"><div class="kicker">Batch</div><b>${esc(j.batch_size)}</b></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="kicker" style="margin-bottom:8px">Phases</div>
+      ${ph.map(p=>`<div class="between" style="padding:9px 0;border-top:1px solid var(--line)">
+        <span><b>${esc(p.name)}</b><br><span class="small">${esc(p.day_range)}</span></span>
+        <i style="width:12px;height:12px;border-radius:50%;background:${p.color_hex};display:block"></i>
+      </div>`).join('')}
+    </div>
+    <button class="btn" style="width:100%" onclick="go('start')">Start this journey</button>
+    <button class="btn alt" style="width:100%;margin-top:10px" onclick="go('kit')">See ingredients & tools</button>`);
+}
+
+function start(){
+  const j=journey();
+  const defaultName=j.name.replace("Beginner's","").trim()+' No. 1';
+  shell(`${topbar('Name the chaos','Start batch')}
+    <div class="card">
+      <label class="kicker">Batch name</label>
+      <input id="batchName" class="field" value="${esc(state.batch?.name||defaultName)}" style="margin:7px 0 12px">
+      <label class="kicker">Winery name</label>
+      <input id="wineryName" class="field" value="${esc(state.batch?.winery||'Garage Plonk')}" style="margin:7px 0 12px">
+      <label class="kicker">Start date</label>
+      <input id="startDate" type="date" class="field" value="${esc(state.batch?.date||new Date().toISOString().slice(0,10))}" style="margin:7px 0 12px">
+      <label class="kicker">Original gravity <span style="font-weight:400;text-transform:none;letter-spacing:0">(measure before pitching yeast)</span></label>
+      <input id="og" class="field mono" value="${esc(state.batch?.og||'')}" placeholder="e.g. 1.084" inputmode="decimal" style="margin-top:7px">
+      <div class="small" style="margin-top:8px;padding:10px;background:var(--paper);border-radius:10px">📊 OG is used to calculate your final ABV. Take this reading before you add yeast.</div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="createBatch()">Open the cellar</button>`);
+}
+
+function dashboard(){
+  const j=journey(state.batch?.journey_id||state.selected);
+  state.selected=j.id;
+  const st=steps(j.id);
+  const cur=st[Math.min(state.currentStep,st.length-1)]||st[0];
+  const ph=phaseForStep(cur);
+  const pct=st.length?Math.round((state.currentStep)/st.length*100):0;
+  const last=state.log.slice().reverse().find(r=>r.sg);
+  // Enhancement 2: show ABV if available
+  const og=parseFloat(state.batch?.og), fg=parseFloat(state.batch?.fg);
+  const abv=(og&&fg)?((og-fg)*131.25).toFixed(1):null;
+
+  shell(`${topbar('Your batch is alive.','Batch dashboard')}
+    <div class="card" style="background:var(--wine);color:white;border:0;margin-bottom:14px">
+      <div class="between">
+        <div>
+          <div class="kicker" style="color:#fff9">${esc(j.name)}</div>
+          <div class="h2" style="color:white;margin:4px 0">${esc(state.batch?.name||'No batch started')}</div>
+        </div>
+        <div style="font-size:46px">🍷</div>
+      </div>
+      <div class="progress" style="background:#ffffff33;margin:12px 0 8px"><i style="width:${pct}%;background:var(--lime)"></i></div>
+      <div class="between small" style="color:#fff9"><span>Step ${Math.min(state.currentStep+1,st.length)} of ${st.length}</span><span>${pct}%</span></div>
+    </div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="card"><div class="kicker">Phase</div><b>${esc(ph.name)}</b></div>
+      <div class="card"><div class="kicker">Gravity</div><b class="mono">${esc(last?.sg||state.batch?.og||'—')}</b></div>
+      ${abv ? `<div class="card" style="background:var(--wine);border:0"><div class="kicker" style="color:#fff9">ABV</div><b class="mono" style="color:white;font-size:18px">${abv}%</b></div>`
+             : `<div class="card"><div class="kicker">Temp</div><b class="mono">${esc(last?.temp||'—')}${last?.temp?'°C':''}</b></div>`}
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="kicker">Next mission</div>
+      <div class="h2" style="font-size:24px">${esc(cur?.title||'Start a journey')}</div>
+      <p class="p">${esc(cur?.tagline||'Choose a wine journey and start your first batch.')}</p>
+    </div>
+    <button class="btn" style="width:100%" onclick="go('task')">Do today's task</button>
+    <button class="btn alt" style="width:100%;margin-top:10px" onclick="go('log')">Log a reading</button>`);
+}
+
+function task(){
+  const j=journey(); const st=steps(j.id);
+  const cur=st[Math.min(state.currentStep,st.length-1)]||{};
+  const ph=phaseForStep(cur);
+  const complete=state.currentStep>=st.length-1;
+  // Enhancement 1: detect what kind of reading to prompt
+  const titleL=(cur.title||'').toLowerCase();
+  const isOG=titleL.includes('original gravity')||titleL.includes('take gravity');
+  const isFG=titleL.includes('final gravity')||titleL.includes('confirm')||titleL.includes('abv');
+  const isTemp=titleL.includes('temperature')||titleL.includes('cool')||titleL.includes('warm');
+  const needsGravity=titleL.includes('gravity')||titleL.includes('reading')||titleL.includes('mid-ferment')||titleL.includes('check primary')||titleL.includes('check secondary')||titleL.includes('taste');
+  const gravLabel=isOG?'Original Gravity (OG)':isFG?'Final Gravity (FG)':'Gravity Reading';
+  const gravPh=isOG?'1.090':isFG?'0.998':'1.050';
+  // Pre-fill from latest log for this step
+  const stepLog=state.log.filter(r=>r.step===state.currentStep).slice(-1)[0]||{};
+  // Enhancement 2: live ABV hint if FG entered and OG exists
+  const og=parseFloat(state.batch?.og);
+
+  shell(`${topbar(cur.title||"Today's task", cur.day_label||"Mission")}
+    <div class="card" style="border-color:${ph.color_hex};margin-bottom:14px">
+      <div class="between" style="margin-bottom:12px">
+        <span class="tag" style="border-color:${ph.color_hex}">${esc(ph.name)}</span>
+        <span class="small">Step ${Math.min(state.currentStep+1,st.length)} / ${st.length}</span>
+      </div>
+      <div class="h1" style="font-size:32px">${esc(cur.title)}</div>
+      <p class="p" style="font-size:16px">${esc(cur.instruction)}</p>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="kicker">Coach says</div>
+      <p class="p script" style="font-size:17px;color:var(--wine);font-weight:900">${esc(cur.coach_message||cur.tagline)}</p>
+    </div>
+    ${cur.why_text?`<div class="card" style="margin-bottom:12px"><div class="kicker">Why it matters</div><p class="p">${esc(cur.why_text)}</p></div>`:''}
+    ${cur.warning_text?`<div class="card" style="margin-bottom:14px;background:#fff3f0;border-color:#d9968b"><div class="kicker" style="color:var(--warn)">Watch out</div><p class="p">${esc(cur.warning_text)}</p></div>`:''}
+
+    <!-- Enhancement 1: Inline log section -->
+    <div class="log-section">
+      <div class="kicker" style="margin-bottom:12px">📊 Log this step <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></div>
+      ${needsGravity||isOG||isFG?`
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <div class="kicker" style="margin-bottom:5px">${esc(gravLabel)}</div>
+          <input id="inline-sg" class="field mono" placeholder="${gravPh}" inputmode="decimal" value="${esc(stepLog.sg||'')}" oninput="liveAbv(this.value)">
+        </div>
+        <div>
+          <div class="kicker" style="margin-bottom:5px">Temperature °C</div>
+          <input id="inline-temp" class="field mono" placeholder="22" inputmode="decimal" value="${esc(stepLog.temp||'')}" oninput="liveTempCheck(this.value)">
+        </div>
+      </div>
+      <div id="abv-hint" style="display:none;background:var(--wine);border-radius:14px;padding:12px;text-align:center;margin-bottom:10px;color:white">
+        <div class="kicker" style="color:#fff9">Calculated ABV</div>
+        <div id="abv-num" style="font-family:Georgia,serif;font-size:28px;font-weight:800;color:white"></div>
+      </div>
+      <div id="temp-hint" style="display:none;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:700"></div>`:''}
+      ${isTemp&&!needsGravity?`
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <div class="kicker" style="margin-bottom:5px">Temperature °C</div>
+          <input id="inline-temp" class="field mono" placeholder="22" inputmode="decimal" value="${esc(stepLog.temp||'')}" oninput="liveTempCheck(this.value)">
+        </div>
+        <div></div>
+      </div>
+      <div id="temp-hint" style="display:none;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:13px;font-weight:700"></div>`:''} 
+      <div class="kicker" style="margin-bottom:5px">Notes</div>
+      <input id="inline-notes" class="field" placeholder="Smells like dark fruit and ambition…" value="${esc(stepLog.notes||'')}" style="margin-bottom:0">
+    </div>
+
+    <button class="btn lime" style="width:100%" onclick="completeStep()">${complete?'Finish & create vintage card':'Mark complete'}</button>
+    <button class="btn alt" style="width:100%;margin-top:10px" onclick="go('help')">Is my wine dying? ⚡</button>`);
+}
+
+// Enhancement 2: Live ABV calculation hint
+function liveAbv(val){
+  const fg=parseFloat(val), og=parseFloat(state.batch?.og);
+  const hint=document.getElementById('abv-hint');
+  const num=document.getElementById('abv-num');
+  if(hint&&num&&fg&&og&&fg<og&&fg<1.05){
+    const abv=((og-fg)*131.25).toFixed(1);
+    num.textContent=abv+'%';
+    hint.style.display='block';
+  } else if(hint){ hint.style.display='none'; }
+}
+
+// Live temperature status
+function liveTempCheck(val){
+  const t=parseFloat(val);
+  const hint=document.getElementById('temp-hint');
+  if(!hint||!t) return;
+  if(t<18){ hint.style.display='block'; hint.style.background='#e8f0ff'; hint.style.color='#2d2d8f'; hint.textContent='❄️ Too cold — warm up the space'; }
+  else if(t>26){ hint.style.display='block'; hint.style.background='#fff0ef'; hint.style.color='var(--warn)'; hint.textContent='🔥 Too warm — move to a cooler spot'; }
+  else { hint.style.display='block'; hint.style.background='#edfff4'; hint.style.color='var(--good)'; hint.textContent='✓ Temperature is perfect'; }
+}
+
+// Enhancement 4: Kit screen with checkboxes
+function kit(){
+  const j=journey();
+  const ings=ingredients(j.id);
+  const equip=equipment(j.id);
+  const cIng=ings.filter(x=>!!state.kit[j.id+'_i'+x.sort_order]).length;
+  const cEq=equip.filter(x=>!!state.kit[j.id+'_e'+x.sort_order]).length;
+  const total=ings.length+equip.length;
+  const checked=cIng+cEq;
+  const essTotal=ings.filter(x=>x.essential).length+equip.filter(x=>x.essential).length;
+  const essChecked=ings.filter(x=>x.essential&&state.kit[j.id+'_i'+x.sort_order]).length+equip.filter(x=>x.essential&&state.kit[j.id+'_e'+x.sort_order]).length;
+  const allEss=essChecked===essTotal;
+
+  function row(x, id){
+    const ck=!!state.kit[id];
+    return `<button class="kit-row" onclick="toggleKit('${id}')">
+      <div class="kit-check ${ck?'on':''}">${ck?'✓':''}</div>
+      <div style="flex:1;text-align:left">
+        <div style="font-weight:700;font-size:14px;color:${ck?'var(--muted)':'var(--ink)'};text-decoration:${ck?'line-through':'none'};transition:all .15s">${esc(x.name)}${!x.essential?` <span style="font-size:10px;font-weight:800;color:var(--muted);background:var(--paper);border-radius:6px;padding:2px 5px;vertical-align:middle">OPTIONAL</span>`:''}</div>
+        <div class="small" style="margin-top:2px">${esc(x.cheeky_note||x.description)}</div>
+      </div>
+      <span class="tag" style="flex-shrink:0">${esc([x.quantity,x.unit].filter(Boolean).join(' '))}</span>
+    </button>`;
+  }
+
+  shell(`${topbar('Gather your kit','Ingredients & tools')}
+    <!-- Progress -->
+    <div class="card" style="margin-bottom:14px;text-align:center">
+      <div class="between" style="margin-bottom:10px">
+        <div class="kicker">Ready for ${esc(j.name)}</div>
+        <span class="tag">${checked} / ${total} items</span>
+      </div>
+      <div class="progress" style="margin-bottom:10px"><i style="width:${total?Math.round(checked/total*100):0}%"></i></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn alt" style="flex:1;padding:10px;font-size:12px" onclick="checkAllKit()">Check all essentials</button>
+        ${allEss ? `<div class="stamp">Ready to start! 🍷</div>` : `<span class="small" style="align-self:center">${essChecked}/${essTotal} essentials</span>`}
+      </div>
+    </div>
+    <!-- Ingredients -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="between" style="margin-bottom:2px">
+        <div class="kicker">Ingredients</div>
+        <span class="tag">${cIng}/${ings.length}</span>
+      </div>
+      ${ings.map(x=>row(x, j.id+'_i'+x.sort_order)).join('')}
+    </div>
+    <!-- Equipment -->
+    <div class="card">
+      <div class="between" style="margin-bottom:2px">
+        <div class="kicker">Equipment</div>
+        <span class="tag">${cEq}/${equip.length}</span>
+      </div>
+      ${equip.map(x=>row(x, j.id+'_e'+x.sort_order)).join('')}
+    </div>`);
+}
+
+function logScreen(){
+  const last=state.log.slice(-1)[0]||{};
+  const og=parseFloat(state.batch?.og), fg=parseFloat(state.batch?.fg);
+  const abv=(og&&fg)?((og-fg)*131.25).toFixed(1):null;
+
+  shell(`${topbar('Log the glug.','Data today, legend tomorrow')}
+    ${abv?`<div class="card" style="background:var(--wine);border:0;margin-bottom:14px;text-align:center">
+      <div class="kicker" style="color:#fff9">Calculated ABV</div>
+      <div style="font-family:Georgia,serif;font-size:36px;font-weight:800;color:white;margin:4px 0">${abv}%</div>
+      <div class="stamp" style="border-color:white;color:white">Certified gluggable</div>
+    </div>`:''}
+    <div class="card" style="margin-bottom:14px">
+      <label class="kicker">Gravity</label>
+      <input id="sg" class="field mono" placeholder="1.070" inputmode="decimal" value="${esc(last.sg||'')}" style="margin:7px 0 12px">
+      <label class="kicker">Temperature °C</label>
+      <input id="temp" class="field mono" placeholder="22" inputmode="decimal" value="${esc(last.temp||'')}" style="margin:7px 0 12px">
+      <label class="kicker">Notes</label>
+      <input id="notes" class="field" placeholder="Smells like berries and bad decisions" value="${esc(last.notes||'')}" style="margin-top:7px">
+      <button class="btn lime" style="width:100%;margin-top:14px" onclick="saveReading()">Save reading</button>
+    </div>
+    <div style="display:grid;gap:10px">
+      ${state.log.length?state.log.slice().reverse().map(r=>`
+        <div class="card">
+          <div class="between">
+            <b class="mono" style="font-size:16px">SG ${esc(r.sg||'—')}</b>
+            <span class="small">${esc(r.date)}</span>
+          </div>
+          <div class="small" style="margin-top:4px">${r.temp?esc(r.temp)+'°C · ':''}${esc(r.notes||'No notes.')}</div>
+          ${r.stepTitle?`<div class="tag" style="margin-top:6px">${esc(r.stepTitle)}</div>`:''}
+        </div>`).join(''):`<div class="card small" style="text-align:center;padding:24px">No readings yet.<br>Your wine is still mysterious.</div>`}
+    </div>`);
+}
+
+function help(){
+  shell(`${topbar('Is my wine dying?','Troubleshooting')}
+    <div class="card" style="margin-bottom:14px;background:#fff8e5">
+      <p class="p"><b>Probably not.</b> Wine is dramatic. Check the symptoms below, take a gravity reading, and do not panic-stir.</p>
+    </div>
+    <div style="display:grid;gap:10px">
+      ${DATA.issues.map((x,i)=>`
+        <button class="issue" onclick="showIssue(${i})">
+          <div class="between">
+            <b>${esc(x.symptom)}</b>
+            <span class="tag" style="${x.severity==='High'?'border-color:var(--warn);color:var(--warn)':''}">${esc(x.severity)}</span>
+          </div>
+          <div class="small" style="margin-top:6px">${esc(x.coach_copy||x.likely_cause)}</div>
+        </button>`).join('')}
+    </div>`);
+}
+
+// Enhancement 7: ABV on Vintage Card
+function vintage(){
+  const j=journey(state.batch?.journey_id||state.selected);
+  const last=state.log.slice(-1)[0]||{};
+  const yr=new Date(state.batch?.date||Date.now()).getFullYear();
+  const og=parseFloat(state.batch?.og), fg=parseFloat(state.batch?.fg);
+  const abv=(og&&fg)?((og-fg)*131.25).toFixed(1):null;
+  const logWithSg=state.log.slice().reverse().find(r=>r.sg&&parseFloat(r.sg)<1.05);
+  const computedAbv=abv||(og&&logWithSg?((og-parseFloat(logWithSg.sg))*131.25).toFixed(1):null);
+
+  shell(`<div style="min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center">
+    <div class="card" style="background:var(--wine);color:white;border:0;padding:28px 20px;margin-bottom:18px">
+      <div class="kicker" style="color:#fff9">Vintage ${yr}</div>
+      <div class="brand" style="font-size:44px;margin:12px 0;color:white">${esc(state.batch?.name||'Tiny Rebel')}</div>
+      <p style="margin:0 auto 18px;line-height:1.55;color:#fffde8;max-width:280px">${esc(state.batch?.winery||'Garage Plonk')} · ${esc(j.name)}</p>
+      ${computedAbv?`
+        <div style="background:#ffffff22;border-radius:14px;padding:14px;margin-bottom:18px">
+          <div class="kicker" style="color:#fff9;margin-bottom:4px">Alcohol by Volume</div>
+          <div style="font-family:Georgia,serif;font-size:42px;font-weight:800;color:white;line-height:1">${computedAbv}%</div>
+          <div class="small" style="color:#fff9;margin-top:4px">${og?'OG '+og.toFixed(3):''}${og&&(fg||logWithSg)?' → FG '+(fg||(logWithSg?parseFloat(logWithSg.sg):'?')).toFixed(3):''}   </div>
+        </div>`:`<div class="small" style="color:#fff9;margin-bottom:18px">Add an OG at batch start + FG reading to unlock ABV</div>`}
+      <div class="stamp" style="border-color:white;color:white">Certified gluggable</div>
+    </div>
+    <div class="grid2" style="margin-bottom:18px">
+      <div class="card"><div class="kicker">Wine</div><b>${esc(j.name)}</b></div>
+      <div class="card"><div class="kicker">Bottles</div><b>6 × 750ml</b></div>
+    </div>
+    ${state.log.slice(-3).reverse().map(r=>`
+      <div class="card" style="margin-bottom:10px;text-align:left">
+        <div class="between">
+          <b class="mono">${esc(r.sg?'SG '+r.sg:'Entry')}</b>
+          <span class="small">${esc(r.date)}</span>
+        </div>
+        <div class="small">${esc(r.notes||'No notes.')}</div>
+      </div>`).join('')}
+    <button class="btn" style="width:100%;margin-top:4px" onclick="resetApp()">Start another batch</button>
+  </div>`);
+}
+
+window.go=go; window.selectJourney=selectJourney; window.createBatch=createBatch;
+window.completeStep=completeStep; window.dismissCelebration=dismissCelebration;
+window.saveReading=saveReading; window.showIssue=showIssue; window.closeModal=closeModal;
+window.resetApp=resetApp; window.toggleKit=toggleKit; window.checkAllKit=checkAllKit;
+window.liveAbv=liveAbv; window.liveTempCheck=liveTempCheck;
+render();
 </script>
 </body>
 </html>
