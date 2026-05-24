@@ -2,37 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Pacifico&display=swap" rel="stylesheet" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Glug Plonk — Private Batch</title>
 <meta name="description" content="A cheeky guided home winemaking app.">
 <meta name="theme-color" content="#641032">
 <style>
-:root{--ink:#151216;--wine:#641032;--wine2:#8a1744;--plum:#6b3a5b;--rose:#e8b9b5;--paper:#f8f0df;--paper2:#fffaf0;--lime:#bdc64b;--muted:#7d706a;--line:#e2d5c2;--good:#2f7d51;--warn:#b84638;}
+:root{--ink:#151112;--wine:#64172f;--wine2:#8a1739;--plum:#3b1528;--pink:#e94b70;--blush:#f8cbd2;--paper:#fff7ee;--paper2:#fffaf4;--lime:#d6ec45;--muted:#6f6365;--line:rgba(21,17,18,.14);--good:#2f7d51;--warn:#b84638;--hard:5px 5px 0 #151112;}
 *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--ink);color:var(--ink);}
 body{display:flex;justify-content:center;align-items:stretch;}
 #app{width:100%;max-width:460px;height:100dvh;background:var(--paper);position:relative;overflow:hidden;box-shadow:0 0 0 1px #0002,0 12px 60px #0007;}
 .app-shell{height:100%;display:flex;flex-direction:column;}
-.main{flex:1;overflow:auto;padding:18px 18px 98px;background:radial-gradient(circle at 10% 0%,#fff8 0 120px,transparent 121px),radial-gradient(circle at 95% 20%,#8a174414 0 80px,transparent 81px),var(--paper);}
+.main{flex:1;overflow:auto;padding:18px 18px 98px;background:radial-gradient(circle at 10% 0%,rgba(255,247,238,.95) 0 120px,transparent 121px),radial-gradient(circle at 92% 18%,rgba(214,236,69,.18) 0 80px,transparent 81px),var(--paper);}
 .brand{font-family:Georgia,'Times New Roman',serif;font-weight:800;letter-spacing:-.05em;line-height:.9;}
-.script{font-family:'Comic Sans MS','Bradley Hand',cursive;letter-spacing:.02em;}
+.script{font-family:'Caveat','Comic Sans MS','Bradley Hand',cursive;letter-spacing:.02em;}
 .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:800;}
 .h1{font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:.95;margin:8px 0 10px;letter-spacing:-.04em;}
 .h2{font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.04;margin:0 0 10px;letter-spacing:-.035em;}
 .p{font-size:14px;line-height:1.55;color:#4f443f;margin:0;}
 button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.btn{border:0;border-radius:999px;background:var(--wine);color:white;padding:15px 18px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 8px 22px #64103230;}
-.btn.alt{background:transparent;color:var(--wine);border:1.5px solid var(--wine);box-shadow:none;}
-.btn.lime{background:var(--lime);color:var(--ink);}
-.card{background:var(--paper2);border:1.5px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 8px 22px #4a2b1810;}
+.btn{border:1.5px solid var(--ink);border-radius:999px;background:var(--wine);color:white;padding:15px 18px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;box-shadow:var(--hard);transition:.18s ease;}
+.btn.alt{background:#fff;color:var(--wine);border:1.5px solid var(--ink);box-shadow:4px 4px 0 rgba(21,17,18,.16);}
+.btn.lime{background:var(--lime);color:var(--ink);border:1.5px solid var(--ink);box-shadow:var(--hard);}
+.card{background:var(--paper2);border:1.5px solid rgba(21,17,18,.18);border-radius:22px;padding:16px;box-shadow:0 8px 22px rgba(44,15,27,.08);}
 .row{display:flex;gap:12px;align-items:center} .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.tag{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff7;border-radius:999px;padding:5px 9px;font-size:11px;color:#5e504a;font-weight:800;}
-.stamp{display:inline-block;border:1.5px solid var(--wine);border-radius:5px;padding:7px 10px;color:var(--wine);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:#fff5;transform:rotate(-1deg);}
-.icon{width:38px;height:38px;border-radius:13px;background:var(--wine);color:white;display:grid;place-items:center;font-family:Georgia,serif;font-weight:900;font-size:18px;box-shadow:inset 0 0 0 1px #fff3;}
-.nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fffaf2ee;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom);}
+.tag{display:inline-flex;align-items:center;border:1.5px solid currentColor;background:#fff;border-radius:999px;padding:5px 10px;font-size:11px;color:var(--muted);font-weight:900;letter-spacing:.06em;text-transform:uppercase;}
+.stamp{display:inline-block;border:1.5px solid var(--ink);border-radius:999px;padding:7px 12px;color:var(--ink);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:#fff;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1deg);}
+.icon{width:40px;height:40px;border-radius:13px;background:var(--wine);color:white;display:grid;place-items:center;font-family:Georgia,serif;font-weight:900;font-size:18px;box-shadow:4px 4px 0 var(--ink);border:1.5px solid var(--ink);position:relative;overflow:hidden;}
+.nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:rgba(255,247,238,.92);backdrop-filter:blur(18px);border-top:1px solid rgba(21,17,18,.12);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom);}
 .nav button{border:0;background:transparent;color:var(--muted);font-size:10px;font-weight:800;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;}
 .nav .active{color:var(--wine);}
-.nav .plus{width:40px;height:40px;border-radius:999px;background:var(--ink);color:white;font-size:24px;margin-top:8px;}
-.progress{height:8px;background:#eadbc8;border-radius:999px;overflow:hidden} .progress>i{display:block;height:100%;background:var(--wine);border-radius:999px;}
+.nav .plus{width:40px;height:40px;border-radius:999px;background:var(--ink);color:white;font-size:24px;margin-top:8px;border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--lime);}
+.progress{height:8px;background:rgba(21,17,18,.1);border-radius:999px;overflow:hidden} .progress>i{display:block;height:100%;background:var(--lime);border-radius:999px;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .journey-card{border:0;border-radius:20px;text-align:left;padding:16px;color:var(--ink);min-height:118px;position:relative;overflow:hidden;box-shadow:0 6px 18px #0001;}
 .journey-card:after{content:'○ ○ ○';position:absolute;right:12px;top:10px;color:#fff9;font-weight:900;letter-spacing:-2px;}
@@ -232,7 +235,7 @@ function shell(content, nav=true){
     <div class="celeb-overlay">
       <div style="font-size:72px;margin-bottom:20px;animation:celebPulse 1.4s ease infinite">🍷</div>
       <div class="h1" style="color:white;font-size:40px;margin-bottom:12px">Yes.</div>
-      <p style="font-family:'Comic Sans MS',cursive;color:#fffde8;font-size:18px;line-height:1.6;margin:0 auto 28px;max-width:300px;font-weight:900">"${esc(state.celebText)}"</p>
+      <p style="font-family:'Caveat','Comic Sans MS',cursive;color:#fffde8;font-size:22px;line-height:1.5;margin:0 auto 28px;max-width:300px;font-weight:900">"${esc(state.celebText)}"</p>
       <div class="stamp" style="border-color:white;color:white;margin-bottom:32px">Milestone unlocked</div>
       <button class="btn lime" style="font-size:16px;padding:16px 40px" onclick="dismissCelebration()">Keep going →</button>
     </div>` : '';
@@ -247,7 +250,7 @@ function shell(content, nav=true){
     ${celeb}`;
 }
 
-function topbar(title, sub=''){ return `<div class="between" style="margin-bottom:18px"><div><div class="kicker">${esc(sub||'Private Batch')}</div><div class="h2">${esc(title)}</div></div><div class="icon">GP</div></div>`; }
+function topbar(title, sub=''){ return `<div class="between" style="margin-bottom:18px"><div><div class="kicker">${esc(sub||'Private Batch')}</div><div class="h2">${esc(title)}</div></div><div class="icon"><span style="position:relative;z-index:1">Gp</span><span style="position:absolute;left:-6px;bottom:-8px;width:52px;height:18px;border-radius:50%;background:#ef5576;opacity:.7"></span></div></div>`; }
 
 function navHtml(){
   const tabs=[
@@ -278,8 +281,8 @@ function render(){
 
 function welcome(){
   shell(`<div style="min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 6px 36px">
-    <div class="brand" style="font-size:70px;color:var(--ink);margin-bottom:12px">Glug<br>Plonk</div>
-    <div class="script" style="font-size:22px;color:var(--wine);font-weight:900;line-height:1.2;margin-bottom:18px">Make weirdly good<br>wine at home</div>
+    <div class="brand" style="font-size:70px;color:var(--ink);margin-bottom:12px;font-family:'Pacifico',Georgia,serif;letter-spacing:-.02em">Glug<br>Plonk</div>
+    <div class="script" style="font-size:24px;color:var(--wine);line-height:1.2;margin-bottom:18px">Good wine. Bad influence.</div>
     <div style="font-size:48px;margin:10px 0 18px">🍷</div>
     <div class="stamp" style="margin:0 auto 28px">No snobbery. Just fermentation.</div>
     <button class="btn" onclick="go('journeys')">Start a batch</button>
